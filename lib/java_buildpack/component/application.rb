@@ -64,6 +64,8 @@ module JavaBuildpack
         @environment = ENV.to_hash
         @details     = parse(@environment.delete('VCAP_APPLICATION'))
         @services    = Services.new(parse(@environment.delete('VCAP_SERVICES')))
+
+        printVar()
       end
 
       private
@@ -72,6 +74,13 @@ module JavaBuildpack
         s << root
         root.children.each { |child| children(child, s) } if root.directory?
         s
+      end
+
+      def printVar()
+        puts '@root : ' + @root
+        puts '@environment : ' + @environment
+        puts '@details : ' + @details
+        puts '@services : ' + @services
       end
 
       def parse(input)

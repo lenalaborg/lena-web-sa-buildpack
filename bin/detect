@@ -24,7 +24,11 @@ require 'java_buildpack/buildpack'
 
 app_dir = ARGV[0]
 
+puts 'start detect'
+puts 'app dir : ' + app_dir
+puts 'call Buildpack.with_buildpack'
 components = JavaBuildpack::Buildpack.with_buildpack(app_dir, 'Detect failed with exception %s', &:detect).compact
+puts 'end Buildpack.with_buildpack'
 
 if components.empty?
   abort
