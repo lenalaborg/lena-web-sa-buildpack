@@ -16,7 +16,7 @@
 # Configuration for the Tomcat container
 ---
 tomcat:
-  version: 1.+
+  version: 9.+
   repository_root: "https://s3.ap-northeast-2.amazonaws.com/download.lenalab.org/lena/cf/lena"
   context_path: 
   external_configuration_enabled: false
