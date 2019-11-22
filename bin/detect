@@ -34,5 +34,5 @@ if components.empty?
   abort
 else
   str = components.join(' ')
-  puts str.length > 255 ? str.slice(0..251) + '...' : str
+  puts str.length > 230 ? 'Detect res : ' + str.slice(0..230) + '...' : 'Detect res : ' + str
 end
