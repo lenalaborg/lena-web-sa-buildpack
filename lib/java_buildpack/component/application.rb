@@ -65,7 +65,7 @@ module JavaBuildpack
         @details     = parse(@environment.delete('VCAP_APPLICATION'))
         @services    = Services.new(parse(@environment.delete('VCAP_SERVICES')))
 
-        printVar()
+        # printVar()
       end
 
       private
