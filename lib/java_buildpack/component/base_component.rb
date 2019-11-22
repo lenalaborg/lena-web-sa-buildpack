@@ -44,6 +44,11 @@ module JavaBuildpack
         @component_name = self.class.to_s.space_case
         @configuration  = context[:configuration]
         @droplet        = context[:droplet]
+
+        print "#{'----->'.red.bold} Param #{:application} "
+        print "#{'----->'.red.bold} Param #{:configuration} "
+        print "#{'----->'.red.bold} Param #{:droplet} "
+        
       end
 
       # If the component should be used when staging an application
