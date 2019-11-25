@@ -19,7 +19,7 @@ require 'java_buildpack/component/versioned_dependency_component'
 require 'java_buildpack/container'
 require 'java_buildpack/container/tomcat/tomcat_utils'
 require 'java_buildpack/util/java_main_utils'
-require 'java_buildpack/logging/logger_factory'
+
 
 module JavaBuildpack
   module Container
@@ -86,7 +86,7 @@ module JavaBuildpack
 
           @droplet.copy_resources
 
-          @logger.debug { "------------------------ Expanding LENA --------------------------" }
+          print "------------------------ Expanding LENA --------------------------"
 
           #configure_linking
           #configure_jasper
