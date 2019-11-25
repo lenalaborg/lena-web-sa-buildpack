@@ -17,6 +17,7 @@
 require 'fileutils'
 require 'java_buildpack/component/versioned_dependency_component'
 require 'java_buildpack/container'
+require 'java_buildpack/container/tomcat/tomcat_utils'
 require 'java_buildpack/util/java_main_utils'
 
 module JavaBuildpack
@@ -27,9 +28,10 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
-        download_tar
-        copy_application
-#        create_dodeploy           # jboss debug
+        # download_tar
+        # copy_application
+        download(@version, @uri) { |file| expand file }
+        link_to(@application.root.children, root)
       end
 
       # (see JavaBuildpack::Component::BaseComponent#release)
