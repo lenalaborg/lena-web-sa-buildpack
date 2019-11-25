@@ -84,8 +84,11 @@ module JavaBuildpack
           shell "tar xzf #{file.path} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
 
           @droplet.copy_resources
-          configure_linking
-          configure_jasper
+
+          @logger.debug { "------------------------ Expanding LENA --------------------------" }
+
+          #configure_linking
+          #configure_jasper
         end
       end
 
