@@ -17,7 +17,6 @@
 require 'fileutils'
 require 'java_buildpack/component/versioned_dependency_component'
 require 'java_buildpack/container'
-require 'java_buildpack/container/tomcat/tomcat_utils'
 require 'java_buildpack/util/java_main_utils'
 
 
@@ -91,6 +90,11 @@ module JavaBuildpack
           #configure_linking
           #configure_jasper
         end
+      end
+
+      def link_to(source, destination)
+        FileUtils.mkdir_p destination
+        source.each { |path| (destination + path.basename).make_symlink(path.relative_path_from(destination)) }
       end
 
     end
