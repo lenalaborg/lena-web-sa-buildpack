@@ -44,7 +44,7 @@ module JavaBuildpack
           @droplet.environment_variables.as_env_vars,
           @droplet.java_home.as_env_var,
           'exec',
-          "$PWD/#{(@droplet.sandbox + 'bin/catalina.sh').relative_path_from(@droplet.root)}",
+          "$PWD/#{(@droplet.sandbox + 'start.sh').relative_path_from(@droplet.root)}",
           'run'
         ].flatten.compact.join(' ')
 
