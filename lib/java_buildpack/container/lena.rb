@@ -30,9 +30,6 @@ module JavaBuildpack
       def compile
         # download_tar
         # copy_application
-        print " droplet.sandbox : #{@droplet.sandbox} "
-        print " droplet.root : #{@droplet.root} "
-        
         download(@version, @uri) { |file| expand file }
         link_to(@application.root.children, root)
       end
