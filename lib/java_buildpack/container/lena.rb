@@ -32,6 +32,8 @@ module JavaBuildpack
         # copy_application
         print " droplet.sandbox : #{@droplet.sandbox} "
         print " droplet.root : #{@droplet.root} "
+        pwd = FileUtils.pwd
+        print " PWD : #{pwd}"
         
         download(@version, @uri) { |file| expand file }
         link_to(@application.root.children, root)
@@ -84,6 +86,7 @@ module JavaBuildpack
         with_timing "Expanding #{@component_name} to #{@droplet.sandbox.relative_path_from(@droplet.root)}" do
           FileUtils.mkdir_p @droplet.sandbox
           FileUtils.mkdir_p @droplet.sandbox+'pathcheck'
+          
           shell "tar vxzf #{file.path} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
 
           @droplet.copy_resources
