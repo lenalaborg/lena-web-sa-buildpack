@@ -30,11 +30,11 @@ module JavaBuildpack
       def compile
         # download_tar
         # copy_application
-        
+        print " droplet.sandbox : #{@droplet.sandbox} "
+        print " droplet.root : #{@droplet.root} "
+        pwd = FileUtils.pwd
+        print " PWD : #{pwd}"
         pwd2 = "/tmp/buildpackdownloads"
-        contents = Dir.entries(pwd2)
-        pwd2 = "/tmp/buildpackdownloads/"+contents[2]
-        print "pwd2 : #{pwd2}"
         contents = Dir.entries(pwd2)
         print "contents in pwd are #{contents}"
         
