@@ -19,6 +19,7 @@ containers:
   - "JavaBuildpack::Container::DistZip"
   - "JavaBuildpack::Container::Groovy"
   - "JavaBuildpack::Container::JavaMain"
+  # Add Lena , remove Tomcat - songyeon
   - "JavaBuildpack::Container::Lena"
   - "JavaBuildpack::Container::PlayFramework"
   - "JavaBuildpack::Container::Ratpack"
@@ -32,6 +33,8 @@ containers:
 jres:
 # - "JavaBuildpack::Jre::IbmJRE"
   - "JavaBuildpack::Jre::OpenJdkJRE"
+# Add OpenJDK for Lena - songyeon  
+  - "JavaBuildpack::Jre::OpenJdkForLena"
 # - "JavaBuildpack::Jre::OracleJRE"
 # - "JavaBuildpack::Jre::ZuluJRE"
 # - "JavaBuildpack::Jre::SapMachineJRE"
