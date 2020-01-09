@@ -30,13 +30,16 @@ module JavaBuildpack
       def compile
         # download_tar
         # copy_application
-        pwd = "/tmp/buildpackdownloads"
-        contents = Dir.entries(pwd)
-        pwd = "/tmp/buildpackdownloads/"+contents[2]+"/binary"
-        print "pwd : #{pwd}"
-        contents = Dir.entries(pwd)
-        print "contents in pwd are #{contents}"
-        download(@version, @uri) { |file| expand file }
+        lenaBinPath = "/tmp/buildpackdownloads"
+        tmpDirPathArray = Dir.entries(lenaBinPath)
+        lenaBinPath = "/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary"
+        #print "lenaBinPath : #{lenaBinPath}"
+        lenaBinPathArray = Dir.entries(lenaBinPath)
+        #print "lenaBinPathArray in lenaBinPath are #{lenaBinPathArray}"
+        lenaBinPath="/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary/"+lenaBinPathArray[2]
+        print "lenaBinPath : #{lenaBinPath}"
+        expandByPath lenaBinPath
+        #download(@version, @uri) { |file| expand file }
         link_to(@application.root.children, root)
       end
 
@@ -92,6 +95,21 @@ module JavaBuildpack
           @droplet.copy_resources
 
           print "------------------------ Expanding LENA --------------------------"
+
+          #configure_linking
+          #configure_jasper
+        end
+      end
+
+      def expandByPath(filePath)
+        with_timing "Expanding By Path #{@component_name} to #{@droplet.sandbox.relative_path_from(@droplet.root)}" do
+          FileUtils.mkdir_p @droplet.sandbox
+          FileUtils.mkdir_p @droplet.sandbox+'pathcheck'
+          shell "tar xzf #{filePath} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
+
+          @droplet.copy_resources
+
+          print "------------------------ Expanding By Path LENA --------------------------"
 
           #configure_linking
           #configure_jasper
