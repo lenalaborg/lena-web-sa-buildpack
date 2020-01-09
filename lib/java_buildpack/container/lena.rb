@@ -30,6 +30,12 @@ module JavaBuildpack
       def compile
         # download_tar
         # copy_application
+        pwd = "/tmp/buildpackdownloads"
+        contents = Dir.entries(pwd)
+        pwd = "/tmp/buildpackdownloads/"+contents[2]+"/binary"
+        print "pwd : #{pwd}"
+        contents = Dir.entries(pwd)
+        print "contents in pwd are #{contents}"
         download(@version, @uri) { |file| expand file }
         link_to(@application.root.children, root)
       end
