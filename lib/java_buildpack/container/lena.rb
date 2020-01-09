@@ -34,9 +34,6 @@ module JavaBuildpack
         print " droplet.root : #{@droplet.root} "
         pwd = FileUtils.pwd
         print " PWD : #{pwd}"
-        pwd2 = "/tmp/buildpackdownloads"
-        contents = Dir.entries(pwd2)
-        print "contents in pwd are #{contents}"
         
         download(@version, @uri) { |file| expand file }
         link_to(@application.root.children, root)
