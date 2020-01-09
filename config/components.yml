@@ -34,7 +34,7 @@ jres:
 # - "JavaBuildpack::Jre::IbmJRE"
   - "JavaBuildpack::Jre::OpenJdkJRE"
 # Add OpenJDK for Lena - songyeon  
-  - "JavaBuildpack::Jre::OpenJdkForLena"
+#  - "JavaBuildpack::Jre::OpenJdkForLena"
 # - "JavaBuildpack::Jre::OracleJRE"
 # - "JavaBuildpack::Jre::ZuluJRE"
 # - "JavaBuildpack::Jre::SapMachineJRE"
