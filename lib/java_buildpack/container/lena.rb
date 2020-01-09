@@ -33,7 +33,7 @@ module JavaBuildpack
         
         pwd2 = "/tmp/buildpackdownloads"
         contents = Dir.entries(pwd2)
-        pwd2 = "/tmp/buildpackdownloads/"+contents[2]+"/binary"
+        pwd2 = "/tmp/buildpackdownloads/"+contents[2]
         print "pwd2 : #{pwd2}"
         contents = Dir.entries(pwd2)
         print "contents in pwd are #{contents}"
