@@ -42,14 +42,9 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#detect)
       def detect
-        
         @version, @uri             = JavaBuildpack::Repository::ConfiguredItem.find_item(@component_name,
                                                                                          @configuration)
         @droplet.java_home.version = @version
-        puts "@component_name : #{@component_name}"
-        puts "@configuration : #{@configuration}"
-        puts "@version : #{@version}"
-        puts "@uri : #{@uri}"
         super
       end
 
@@ -57,7 +52,6 @@ module JavaBuildpack
       def compile
         download_tar
         @droplet.copy_resources
-        puts "@droplet.copy_resources : #{@droplet.copy_resources}"
         disable_dns_caching if link_local_dns?
 
         return if @droplet.java_home.java_8_or_later?
