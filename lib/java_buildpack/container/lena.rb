@@ -36,7 +36,8 @@ module JavaBuildpack
         #print "lenaBinPath : #{lenaBinPath}"
         lenaBinPathArray = Dir.entries(lenaBinPath)
         #print "lenaBinPathArray in lenaBinPath are #{lenaBinPathArray}"
-        lenaBinPath="/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary/"+lenaBinPathArray[2]
+        #lenaBinPath="/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary/"+lenaBinPathArray[2]
+        lenaBinPath="/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary/"
         print "lenaBinPath : #{lenaBinPath}"
         expandByPath lenaBinPath
         #download(@version, @uri) { |file| expand file }
@@ -105,7 +106,14 @@ module JavaBuildpack
         with_timing "Expanding By Path #{@component_name} to #{@droplet.sandbox.relative_path_from(@droplet.root)}" do
           FileUtils.mkdir_p @droplet.sandbox
           FileUtils.mkdir_p @droplet.sandbox+'pathcheck'
-          shell "tar xzf #{filePath} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
+          #shell "tar xzf #{filePath} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
+          installFilePath1=filePath+"lena-was-1.3.0.tar.gz"
+          installFilePath2=filePath+"lena-was-1.3.1.tar.gz"
+          installFilePath3=filePath+"install-lena-internal.sh"
+          shell "tar xzf #{installFilePath1} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
+          shell "tar xzf #{installFilePath2} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
+          shell "mv #{installFilePath3} #{@droplet.sandbox}" 
+          
 
           @droplet.copy_resources
 
