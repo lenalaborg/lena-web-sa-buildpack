@@ -105,7 +105,7 @@ module JavaBuildpack
       def expandByPath(filePath)
         with_timing "Expanding By Path #{@component_name} to #{@droplet.sandbox.relative_path_from(@droplet.root)}" do
           FileUtils.mkdir_p @droplet.sandbox
-          FileUtils.mkdir_p @droplet.sandbox+'pathcheck'
+          FileUtils.mkdir_p @droplet.sandbox+'back'
           #shell "tar xzf #{filePath} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
           installFilePath1=filePath+"lena-was-1.3.0.tar.gz"
           installFilePath2=filePath+"lena-was-1.3.1.tar.gz"
