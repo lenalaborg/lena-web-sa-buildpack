@@ -116,6 +116,9 @@ module JavaBuildpack
           shell "mv #{installFilePath3} #{@droplet.sandbox}" 
           shell "mv #{installFilePath4} #{@droplet.sandbox}/back" 
           shell "chmod 755 #{@droplet.sandbox}/back/test.sh"
+
+          shell "chmod 755 #{@droplet.sandbox}/install-lena-internal.sh"
+          shell "sh #{@droplet.sandbox}/install-lena-internal.sh"          
           
           
 
