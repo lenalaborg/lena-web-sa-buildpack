@@ -5,13 +5,13 @@
 ######################################################
 
 WORKING_DIR=`cd $(dirname $0) ; pwd -P`
-
-JAVA_HOME=/home/vcap/app/.java-buildpack/open_jdk_jre/
-LENA_HOME=/home/vcap/app/.java-buildpack/lena
+# /tmp/app/.java-buildpack/lena/install-lena-internal.sh
+JAVA_HOME=/tmp/app/.java-buildpack/open_jdk_jre/
+LENA_HOME=/tmp/app/.java-buildpack/lena
 LENA_SERVER_TYPE=standard
 LENA_SERVICE_PORT=${VCAP_APP_PORT}
 LENA_SERVER_NAME=appServer
-LENA_SERVER_HOME=/home/vcap/app/.java-buildpack/lena/servers/appServer
+LENA_SERVER_HOME=/tmp/app/.java-buildpack/lena/servers/appServer
 LENA_USER=vcap
 #Max Heap Mem Size
 #LENA_XMX=@{lena.xmx}
