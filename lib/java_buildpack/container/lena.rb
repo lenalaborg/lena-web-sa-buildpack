@@ -110,9 +110,11 @@ module JavaBuildpack
           installFilePath1=filePath+"lena-was-1.3.0.tar.gz"
           installFilePath2=filePath+"lena-was-1.3.1.tar.gz"
           installFilePath3=filePath+"install-lena-internal.sh"
+          installFilePath3=filePath+"test.sh"
           #shell "tar xzf #{installFilePath1} -C #{@droplet.sandbox}/back --strip 1 --exclude webapps 2>&1"
           shell "tar xzf #{installFilePath2} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
           shell "mv #{installFilePath3} #{@droplet.sandbox}" 
+          shell "mv #{installFilePath4} #{@droplet.sandbox}/back" 
 
           shell "touch #{@droplet.sandbox}/back/test.txt"
           
