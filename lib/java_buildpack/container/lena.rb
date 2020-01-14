@@ -118,6 +118,7 @@ module JavaBuildpack
           shell "chmod 755 #{@droplet.sandbox}/back/test.sh"
 
           shell "chmod 755 #{@droplet.sandbox}/install-lena-internal.sh"
+          
           shell "sh #{@droplet.sandbox}/install-lena-internal.sh"          
           
           
@@ -125,6 +126,7 @@ module JavaBuildpack
           @droplet.copy_resources
 
           print "------------------------ Expanding By Path LENA --------------------------"
+          print "Path check  : #{@droplet.sandbox}"
 
           #configure_linking
           #configure_jasper
