@@ -6,6 +6,9 @@
 
 WORKING_DIR=`cd $(dirname $0) ; pwd -P`
 # /tmp/app/.java-buildpack/lena/install-lena-internal.sh
+
+echo "==== Set Parameter ===="   
+
 JAVA_HOME=/tmp/app/.java-buildpack/open_jdk_jre/
 LENA_HOME=/tmp/app/.java-buildpack/lena
 LENA_SERVER_TYPE=standard
@@ -186,6 +189,9 @@ case ${LENA_SERVER_TYPE} in
         ;;
     *)
         # standard, exclusive
+
+        echo "==== Start Install ===="   
+
         echo "${LENA_HOME}/bin/install.sh create lena-se ${JAVA_HOME} ${LENA_SERVER_NAME} ${LENA_SERVICE_PORT} ${LENA_USER}"
         ${LENA_HOME}/bin/install.sh create lena-se ${JAVA_HOME} ${LENA_SERVER_NAME} ${LENA_SERVICE_PORT} ${LENA_USER}
         # Reset Heap & Perm memory size of was
@@ -196,6 +202,7 @@ case ${LENA_SERVER_TYPE} in
         # sed -i "s/MaxPermSize=[0-9]*m/MaxPermSize=${LENA_XPX}/g" ${LENA_SERVER_HOME}/bin/setenv.sh
       	# cat ${LENA_SERVER_HOME}/bin/setenv.sh | grep Xmx | grep -v "#CATALINA"
 
+        echo "==== Set Log file to console ===="   
         echo "Change LOG_OUTPUT to console"
         sed -i "s/LOG_OUTPUT=file/LOG_OUTPUT=console/g" ${LENA_SERVER_HOME}/bin/setenv.sh
         sed -i "s/CATALINA_OPTS=\" \${CATALINA_OPTS} -Xloggc/#CATALINA_OPTS=\" \${CATALINA_OPTS} -Xloggc/g"  ${LENA_SERVER_HOME}/bin/setenv.sh
@@ -233,6 +240,7 @@ case ${LENA_SERVER_TYPE} in
 esac
 
 # Reduce Image Volume
+echo "==== Remove temp files ===="   
 echo "rm -rf ${LENA_HOME}/depot/lena-*"
 if [ "${LENA_SERVER_TYPE}" == "web" ]; then
     rm -rf ${LENA_HOME}/depot/lena-web
