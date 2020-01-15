@@ -47,6 +47,8 @@ module JavaBuildpack
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
 
+        `echo "hello world3333333333333333333333333333331"` # returns stdout
+          %x[echo 'hello world4444444444444444444444444444444444442222'] # returns stdout
         @droplet.environment_variables.add_environment_variable 'JAVA_OPTS', '$JAVA_OPTS'
         @droplet.java_opts.add_system_property 'http.port', '$PORT'
 
