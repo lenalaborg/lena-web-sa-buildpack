@@ -52,7 +52,7 @@ module JavaBuildpack
           @droplet.environment_variables.as_env_vars,
           @droplet.java_home.as_env_var,
           'exec',
-          "$PWD/#{(@droplet.sandbox + 'back/test.sh').relative_path_from(@droplet.root)}",
+          "$PWD/#{(@droplet.sandbox + 'servers/appServer/start.sh').relative_path_from(@droplet.root)}",
           'run'
         ].flatten.compact.join(' ')
 
