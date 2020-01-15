@@ -124,6 +124,7 @@ module JavaBuildpack
           `echo "hello world1111111111111111111111111111111111111111111"` # returns stdout
           %x[echo 'hello world222222222222222222222222222222222222222222'] # returns stdout
           
+          
 
           @droplet.copy_resources
 
