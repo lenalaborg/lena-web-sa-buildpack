@@ -119,11 +119,13 @@ module JavaBuildpack
 
           shell "chmod 755 #{@droplet.sandbox}/install-lena-internal.sh"
           
+          print " =========================== sh #{@droplet.sandbox}/install-lena-internal.sh =========================="           
+          shell "cat #{@droplet.sandbox}/install-lena-internal.sh"          
           shell "sh #{@droplet.sandbox}/install-lena-internal.sh"          
           
           `echo "hello world1111111111111111111111111111111111111111111"` # returns stdout
           %x[echo 'hello world222222222222222222222222222222222222222222'] # returns stdout
-          
+
           
 
           @droplet.copy_resources
