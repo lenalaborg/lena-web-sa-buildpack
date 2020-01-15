@@ -12,7 +12,7 @@ echo "==== Set Parameter ===="
 JAVA_HOME=/tmp/app/.java-buildpack/open_jdk_jre/
 LENA_HOME=/tmp/app/.java-buildpack/lena
 LENA_SERVER_TYPE=standard
-LENA_SERVICE_PORT=${VCAP_APP_PORT}
+LENA_SERVICE_PORT=8080
 LENA_SERVER_NAME=appServer
 LENA_SERVER_HOME=/tmp/app/.java-buildpack/lena/servers/appServer
 LENA_USER=vcap
