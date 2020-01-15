@@ -28,16 +28,14 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
-        # download_tar
+
         # copy_application
         lenaBinPath = "/tmp/buildpackdownloads"
         tmpDirPathArray = Dir.entries(lenaBinPath)
         lenaBinPath = "/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary"
-        #print "lenaBinPath : #{lenaBinPath}"
         lenaBinPathArray = Dir.entries(lenaBinPath)
-        #print "lenaBinPathArray in lenaBinPath are #{lenaBinPathArray}"
-        #lenaBinPath="/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary/"+lenaBinPathArray[2]
         lenaBinPath="/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary/"
+        #lenaBinPath="/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary/"+lenaBinPathArray[2]
         print "lenaBinPath : #{lenaBinPath}"
         expandByPath lenaBinPath
         #download(@version, @uri) { |file| expand file }
@@ -47,8 +45,6 @@ module JavaBuildpack
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
 
-        `echo "hello world3333333333333333333333333333331"` # returns stdout
-          %x[echo 'hello world4444444444444444444444444444444444442222'] # returns stdout
         @droplet.environment_variables.add_environment_variable 'JAVA_OPTS', '$JAVA_OPTS'
         @droplet.java_opts.add_system_property 'http.port', '$PORT'
 
@@ -107,36 +103,21 @@ module JavaBuildpack
       def expandByPath(filePath)
         with_timing "Expanding By Path #{@component_name} to #{@droplet.sandbox.relative_path_from(@droplet.root)}" do
           FileUtils.mkdir_p @droplet.sandbox
-          FileUtils.mkdir_p @droplet.sandbox+'back'
-          #shell "tar xzf #{filePath} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
-          installFilePath1=filePath+"lena-was-1.3.0.tar.gz"
-          installFilePath2=filePath+"lena-was-1.3.1.tar.gz"
-          installFilePath3=filePath+"install-lena-internal.sh"
-          installFilePath4=filePath+"test.sh"
-          #shell "tar xzf #{installFilePath1} -C #{@droplet.sandbox}/back --strip 1 --exclude webapps 2>&1"
-          shell "tar xzf #{installFilePath2} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
-          shell "mv #{installFilePath3} #{@droplet.sandbox}" 
-          shell "mv #{installFilePath4} #{@droplet.sandbox}/back" 
-          shell "chmod 755 #{@droplet.sandbox}/back/test.sh"
+          
+          installFilePath=filePath+"lena-was-1.3.1.tar.gz"
+          shell "tar xzf #{installFilePath} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
 
+          installScriptPath=filePath+"install-lena-internal.sh"
+          shell "mv #{installScriptPath} #{@droplet.sandbox}" 
           shell "chmod 755 #{@droplet.sandbox}/install-lena-internal.sh"
+          shell "sh #{@droplet.sandbox}/install-lena-internal.sh"          
           
-          print " =========================== sh #{@droplet.sandbox}/install-lena-internal.sh =========================="           
-          #shell "cat #{@droplet.sandbox}/install-lena-internal.sh"          
-          #shell "sh #{@droplet.sandbox}/install-lena-internal.sh"          
-          
-          res1=`cat #{@droplet.sandbox}/install-lena-internal.sh` # returns stdout
-          res2=%x[sh #{@droplet.sandbox}/install-lena-internal.sh] # returns stdout
-
-          print "#{res1}"
-          print "#{res2}"
-
-          
+          # res1=`cat #{@droplet.sandbox}/install-lena-internal.sh` # returns stdout
+          # res2=%x[sh #{@droplet.sandbox}/install-lena-internal.sh] # returns stdout
 
           @droplet.copy_resources
 
           print "------------------------ Expanding By Path LENA --------------------------"
-          print "Path check  : #{@droplet.sandbox}"
 
           #configure_linking
           #configure_jasper
