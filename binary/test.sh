@@ -1,3 +1,6 @@
 #!/bin/bash
 
-tail -f /home/vcap/app/.java-buildpack/lena/install-lena-internal.sh
+while true
+    do
+        tail -f /dev/null & wait ${!}
+    done
