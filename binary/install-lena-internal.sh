@@ -212,6 +212,11 @@ case ${LENA_SERVER_TYPE} in
         sed -i "s/DUMP_HOME=\${CATALINA_HOME}\/logs/DUMP_HOME=\${CATALINA_HOME}\/dumps/g" ${LENA_SERVER_HOME}/env.sh
         cat ${LENA_SERVER_HOME}/env.sh | grep DUMP_HOME
 
+        echo "==== Set root path ==="
+        sed -i "s/tmp\/app/home\/vcap\/app/g"  ${LENA_SERVER_HOME}/env.sh
+        sed -i "s/tmp\/app/home\/vcap\/app/g"  ${LENA_SERVER_HOME}/conf/Catalina/localhost/ROOT.xml       
+
+
 		#Change root user enabled.
         # if [[ ${LENA_USER} = "root" ]]; then 
 		# 	echo "Change server.xml,start.sh to run as root user"
