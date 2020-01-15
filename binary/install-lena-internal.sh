@@ -213,8 +213,11 @@ case ${LENA_SERVER_TYPE} in
         cat ${LENA_SERVER_HOME}/env.sh | grep DUMP_HOME
 
         echo "==== Set root path ==="
-        sed -i "s/tmp\/app/home\/vcap\/app/g"  ${LENA_SERVER_HOME}/env.sh
-        sed -i "s/tmp\/app/home\/vcap\/app/g"  ${LENA_SERVER_HOME}/conf/Catalina/localhost/ROOT.xml       
+        sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_SERVER_HOME}/env.sh
+        #sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_SERVER_HOME}/conf/Catalina/localhost/ROOT.xml       
+        sed -i "s/tmp\/app\/\.java\-buildpack\/lena\/depot\/lena-application\/ROOT/home\/vcap\/app/g" ${LENA_SERVER_HOME}/conf/Catalina/localhost/ROOT.xml       
+        
+
 
 
 		#Change root user enabled.
