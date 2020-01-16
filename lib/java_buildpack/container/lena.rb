@@ -51,7 +51,7 @@ module JavaBuildpack
         # move install shell
         move_to(lenaInstallScriptPath,@droplet.sandbox)
         # run install shell
-        runShPath = @droplet.sandbox +"/"+ lenaInstallScriptPathArr[2]
+        runShPath = "#{@droplet.sandbox}/"+ lenaInstallScriptPathArr[2]
         print "==== 4. runShPath : #{runShPath} \n"         
         run_sh runShPath
         #download(@version, @uri) { |file| expand file }
