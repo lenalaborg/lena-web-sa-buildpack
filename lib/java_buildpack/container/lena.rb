@@ -144,9 +144,9 @@ module JavaBuildpack
       end
 
       def move_to(source, destination)
-        print "==== move file from  #{source} to #{@destination}  ==== \n"
+        print "==== move file from  #{source} to #{destination}  ==== \n"
         FileUtils.mkdir_p destination
-        shell "mv #{source} #{@destination}" 
+        shell "mv #{source} #{destination}" 
       end
 
       def run_sh(shPath)
