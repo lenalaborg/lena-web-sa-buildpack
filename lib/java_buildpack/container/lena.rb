@@ -45,7 +45,7 @@ module JavaBuildpack
 
         print "==== 2. lenaInstallFilePath : #{lenaInstallFilePath} \n"
         print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
-
+        print "===@droplet.sandbox : #{@droplet.sandbox} \n"
         # unzip Tar
         expandByPath lenaInstallFilePath
         # move install shell
