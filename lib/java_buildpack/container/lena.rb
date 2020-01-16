@@ -155,6 +155,7 @@ module JavaBuildpack
         print "==== run shell #{shPath} ==== \n"
         shell "chmod 755 #{shPath}"
         shell "sh #{shPath}"       
+        
       end
 
     end
