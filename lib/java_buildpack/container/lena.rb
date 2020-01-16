@@ -41,7 +41,7 @@ module JavaBuildpack
         lenaInstallFilePath = lenaInstallFilePath + lenaInstallFilePathArr[2]
         lenaInstallScriptPath = lenaBinPath + "/installScript/"
         lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
-        lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPath[2]
+        lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
 
         print "==== 2. lenaInstallFilePath : #{lenaInstallFilePath} \n"
         print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
