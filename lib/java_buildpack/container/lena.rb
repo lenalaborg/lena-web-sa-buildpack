@@ -29,15 +29,29 @@ module JavaBuildpack
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
 
-        # copy_application
-        lenaBinPath = "/tmp/buildpackdownloads"
-        tmpDirPathArray = Dir.entries(lenaBinPath)
-        lenaBinPath = "/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary"
-        lenaBinPathArray = Dir.entries(lenaBinPath)
-        lenaBinPath="/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary/"
-        #lenaBinPath="/tmp/buildpackdownloads/"+tmpDirPathArray[2]+"/binary/"+lenaBinPathArray[2]
-        print "lenaBinPath : #{lenaBinPath}"
-        expandByPath lenaBinPath
+        # GET LENA FILE PATH
+        lenaBinPath = "/tmp/buildpackdownloads/"
+        tmpDirPathArr = Dir.entries(lenaBinPath)
+        lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
+        
+        print "==== 1. lenaBinPath : #{lenaBinPath} \n"
+
+        lenaInstallFilePath = lenaBinPath + "/installFile/"
+        lenaInstallFilePathArr = Dir.entries(lenaInstallFilePath)
+        lenaInstallFilePath = lenaInstallFilePath + lenaInstallFilePathArr[2]
+        lenaInstallScriptPath = lenaBinPath + "/installScript/"
+        lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
+        lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPath[2]
+
+        print "==== 2. lenaInstallFilePath : #{lenaInstallFilePath} \n"
+        print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
+
+        # unzip Tar
+        expandByPath lenaInstallFilePath
+        # move install shell
+        move_to(lenaInstallScriptPath,@droplet.sandbox)
+        # run install shell
+        run_sh lenaInstallScriptPath
         #download(@version, @uri) { |file| expand file }
         link_to(@application.root.children, root)
       end
@@ -104,13 +118,13 @@ module JavaBuildpack
         with_timing "Expanding By Path #{@component_name} to #{@droplet.sandbox.relative_path_from(@droplet.root)}" do
           FileUtils.mkdir_p @droplet.sandbox
           
-          installFilePath=filePath+"lena-was-1.3.1.tar.gz"
-          shell "tar xzf #{installFilePath} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
+          #installFilePath=filePath+"lena-was-1.3.1.tar.gz"
+          shell "tar xzf #{filePath} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
 
-          installScriptPath=filePath+"install-lena-internal.sh"
-          shell "mv #{installScriptPath} #{@droplet.sandbox}" 
-          shell "chmod 755 #{@droplet.sandbox}/install-lena-internal.sh"
-          shell "sh #{@droplet.sandbox}/install-lena-internal.sh"          
+          #installScriptPath=filePath+"install-lena-internal.sh"
+          #shell "mv #{installScriptPath} #{@droplet.sandbox}" 
+          #shell "chmod 755 #{@droplet.sandbox}/install-lena-internal.sh"
+          #shell "sh #{@droplet.sandbox}/install-lena-internal.sh"          
           
           # res1=`cat #{@droplet.sandbox}/install-lena-internal.sh` # returns stdout
           # res2=%x[sh #{@droplet.sandbox}/install-lena-internal.sh] # returns stdout
@@ -127,6 +141,18 @@ module JavaBuildpack
       def link_to(source, destination)
         FileUtils.mkdir_p destination
         source.each { |path| (destination + path.basename).make_symlink(path.relative_path_from(destination)) }
+      end
+
+      def move_to(source, destination)
+        print "==== move file from  #{source} to #{@destination}  ==== \n"
+        FileUtils.mkdir_p destination
+        shell "mv #{source} #{@destination}" 
+      end
+
+      def run_sh(shPath)
+        print "==== run shell #{shPath} ==== \n"
+        shell "chmod 755 #{shPath}"
+        shell "sh #{shPath}"       
       end
 
     end
