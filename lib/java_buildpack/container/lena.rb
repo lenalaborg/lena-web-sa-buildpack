@@ -36,25 +36,29 @@ module JavaBuildpack
         
         print "==== 1. lenaBinPath : #{lenaBinPath} \n"
 
-        lenaInstallFilePath = lenaBinPath + "/installFile/"
-        lenaInstallFilePathArr = Dir.entries(lenaInstallFilePath)
-        lenaInstallFilePath = lenaInstallFilePath + lenaInstallFilePathArr[2]
+        # lenaInstallFilePath = lenaBinPath + "/installFile/"
+        # lenaInstallFilePathArr = Dir.entries(lenaInstallFilePath)
+        # lenaInstallFilePath = lenaInstallFilePath + lenaInstallFilePathArr[2]
         lenaInstallScriptPath = lenaBinPath + "/installScript/"
         lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
         lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
 
-        print "==== 2. lenaInstallFilePath : #{lenaInstallFilePath} \n"
+        # print "==== 2. lenaInstallFilePath : #{lenaInstallFilePath} \n"
         print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
         print "===@droplet.sandbox : #{@droplet.sandbox} \n"
         # unzip Tar
-        expandByPath lenaInstallFilePath
+        # expandByPath lenaInstallFilePath
         # move install shell
         move_to(lenaInstallScriptPath,@droplet.sandbox)
         # run install shell
         runShPath = "#{@droplet.sandbox}/"+ lenaInstallScriptPathArr[2]
         print "==== 4. runShPath : #{runShPath} \n"         
+
+        download(@version, @uri) { |file| expand file }
+
+        # Call Lena Install shell
         run_sh runShPath
-        #download(@version, @uri) { |file| expand file }
+        
         link_to(@application.root.children, root)
       end
 
@@ -104,7 +108,7 @@ module JavaBuildpack
       def expand(file)
         with_timing "Expanding #{@component_name} to #{@droplet.sandbox.relative_path_from(@droplet.root)}" do
           FileUtils.mkdir_p @droplet.sandbox
-          FileUtils.mkdir_p @droplet.sandbox+'pathcheck'
+          
           shell "tar xzf #{file.path} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
 
           @droplet.copy_resources

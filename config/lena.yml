@@ -4,6 +4,6 @@
 #   version: 1.+
 #   repository_root: "https://s3.ap-northeast-2.amazonaws.com/download.lenalab.org/lena/cf/lena"
 ---
-version: 10.+
+version: 1.3.+
 #repository_root: ! '{default.repository.root}/jeus'
-repository_root: ! 'https://s3.ap-northeast-2.amazonaws.com/download.lenalab.org/lena/cf/lena'
+repository_root: ! 'https://github.com/lenalaborg/lena-was-installfiles/blob/master'
