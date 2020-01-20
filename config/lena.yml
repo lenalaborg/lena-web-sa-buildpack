@@ -6,4 +6,4 @@
 ---
 version: 1.3.+
 #repository_root: ! '{default.repository.root}/jeus'
-repository_root: ! 'https://github.com/lenalaborg/lena-was-installfiles/blob/master'
+repository_root: ! 'https://github.com/lenalaborg/lena-was-installfiles/raw/master'
