@@ -81,6 +81,9 @@ case ${LENA_SERVER_TYPE} in
         # echo "curl -o ${LENA_SERVER_HOME}/start.sh ${LIB_DOWNLOAD_URL}/web/start.sh_stdout"
         # curl -o ${LENA_SERVER_HOME}/start.sh ${LIB_DOWNLOAD_URL}/web/start.sh_stdout
         cp -f ${LENA_HOME}/depot/lena-web-lib/start.sh_stdout ${LENA_SERVER_HOME}/start.sh
+
+        sed "s/-DFOREGROUND 2>&1 &/-DFOREGROUND/g" ${LENA_SERVER_HOME}/start.sh
+
         
         # echo "Create LENA logrotate configure path = /etc/logrotate.d/lenaw"
         # touch /etc/logrotate.d/lenaw
