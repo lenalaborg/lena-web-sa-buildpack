@@ -164,7 +164,9 @@ module JavaBuildpack
       def run_sh(shPath)
         print "==== run shell #{shPath} ==== \n"
         shell "chmod 755 #{shPath}"
+        print "==== call shell ==== \n"
         shell "sh #{shPath}"       
+        print "==== end shell ==== \n"
         
       end
 

@@ -252,20 +252,20 @@ case ${LENA_SERVER_TYPE} in
 esac
 
 # Reduce Image Volume
-echo "==== Remove temp files ===="   
-echo "rm -rf ${LENA_HOME}/depot/lena-*"
-if [ "${LENA_SERVER_TYPE}" == "web" ]; then
-    rm -rf ${LENA_HOME}/depot/lena-web
-    rm -rf ${LENA_HOME}/depot/lena-installer
-    rm -rf ${LENA_HOME}/depot/lena-agent
-else
-    rm -rf ${LENA_HOME}/depot/lena-se
-    rm -rf ${LENA_HOME}/depot/lena-ee
-    rm -rf ${LENA_HOME}/depot/lena-manager
-    rm -rf ${LENA_HOME}/depot/lena-session
-    rm -rf ${LENA_HOME}/depot/lena-installer
-    rm -rf ${LENA_HOME}/depot/lena-agent
-fi
+# echo "==== Remove temp files ===="   
+# echo "rm -rf ${LENA_HOME}/depot/lena-*"
+# if [ "${LENA_SERVER_TYPE}" == "web" ]; then
+#     rm -rf ${LENA_HOME}/depot/lena-web
+#     rm -rf ${LENA_HOME}/depot/lena-installer
+#     rm -rf ${LENA_HOME}/depot/lena-agent
+# else
+#     rm -rf ${LENA_HOME}/depot/lena-se
+#     rm -rf ${LENA_HOME}/depot/lena-ee
+#     rm -rf ${LENA_HOME}/depot/lena-manager
+#     rm -rf ${LENA_HOME}/depot/lena-session
+#     rm -rf ${LENA_HOME}/depot/lena-installer
+#     rm -rf ${LENA_HOME}/depot/lena-agent
+# fi
 
 echo "chown -R ${LENA_USER}:${LENA_USER} ${LENA_HOME}"
 chown -R ${LENA_USER}:${LENA_USER} ${LENA_HOME}
