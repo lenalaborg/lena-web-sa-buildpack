@@ -94,6 +94,8 @@ case ${LENA_SERVER_TYPE} in
         
         # echo "Change LOG_HOME to ${LENA_HOME}/logs/${SERVER_ID}"
         # sed -i "s/\${INSTALL_PATH}\/logs/@{lena.home.regexp}\/logs\/\${SERVER_ID}/g" ${LENA_SERVER_HOME}/env.sh
+        echo "==== Set root path ==="
+        sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_SERVER_HOME}/env.sh
         ;;
     manager)
     	# echo "${LENA_HOME}/bin/install.sh create lena-manager ${JAVA_HOME} ${LENA_SERVICE_PORT} ${LENA_MGR_UDP_PORT} ${LENA_USER}"
