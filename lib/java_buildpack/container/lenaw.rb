@@ -125,13 +125,13 @@ module JavaBuildpack
           #shell "chmod 755 #{@droplet.sandbox}/install-lena-internal.sh"
           #shell "sh #{@droplet.sandbox}/install-lena-internal.sh"          
           
-          res1=`ls #{@droplet.sandbox}` # returns stdout
+          #res1=`ls #{@droplet.sandbox}` # returns stdout
           # res2=%x[sh #{@droplet.sandbox}/install-lena-internal.sh] # returns stdout
 
           @droplet.copy_resources
 
           print "------------------------ Expanding By Path LENA --------------------------"
-          print "#{res1}"
+          #print "#{res1}"
 
           #configure_linking
           #configure_jasper
