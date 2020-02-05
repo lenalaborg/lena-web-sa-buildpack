@@ -56,18 +56,18 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
-         shell "top"
+        #  shell "top"
         # #/home/vcap/app/.java-buildpack/lena
-        # @droplet.environment_variables.add_environment_variable 'JAVA_OPTS', '$JAVA_OPTS'
-        # @droplet.java_opts.add_system_property 'http.port', '$PORT'
+        @droplet.environment_variables.add_environment_variable 'JAVA_OPTS', '$JAVA_OPTS'
+        @droplet.java_opts.add_system_property 'http.port', '$PORT'
 
-        # [
-        #   @droplet.environment_variables.as_env_vars,
-        #   @droplet.java_home.as_env_var,
-        #   'exec',
-        #   "$PWD/#{(@droplet.sandbox + 'httpd/start.sh').relative_path_from(@droplet.root)}",
-        #   'run'
-        # ].flatten.compact.join(' ')
+        [
+          @droplet.environment_variables.as_env_vars,
+          @droplet.java_home.as_env_var,
+          'exec',
+          "$PWD/#{(@droplet.sandbox + 'httpd/start.sh').relative_path_from(@droplet.root)}",
+          'run'
+        ].flatten.compact.join(' ')
 
       end
 
