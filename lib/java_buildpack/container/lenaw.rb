@@ -109,6 +109,17 @@ module JavaBuildpack
 
           print "------------------------ Expanding LENA --------------------------"
 
+
+            tarPath = "/tmp/app/.java-buildpack/lenaw/"
+         tmpDirPathArr = Dir.entries(tarPath)
+         print "==== 1. tmpDirPathArr : #{tmpDirPathArr} \n"
+        # lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
+        # print "==== 1. lenaBinPath : #{lenaBinPath} \n"
+        # lenaInstallScriptPath = lenaBinPath + "/installScript/top.sh"
+        # # lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
+        # # lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
+        # print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
+
           #configure_linking
           #configure_jasper
         end
