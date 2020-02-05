@@ -22,7 +22,7 @@ LENA_USER=vcap
 #LENA_XPX=@{lena.xpx}
 #Ubuntu Lib Download Url
 #LIB_DOWNLOAD_URL="@{download.lib.baseUrl}"
-UBUNTU_LIBS=("libcrypto.so.10" "libpcre.so.0" "libssl.so.10")
+#UBUNTU_LIBS=("libcrypto.so.10" "libpcre.so.0" "libssl.so.10")
 
 #build info
 #IMG_INFO_FILE=${LENA_HOME}/etc/info/image-build.info
