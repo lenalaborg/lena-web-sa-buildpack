@@ -38,7 +38,7 @@ module JavaBuildpack
         lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
         lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
         print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
-         print "===@droplet.sandbox : #{@droplet.sandbox} \n"
+        print "=== @droplet.sandbox : #{@droplet.sandbox} \n"
 
         # move install shell
         move_to(lenaInstallScriptPath,@droplet.sandbox)
@@ -50,7 +50,7 @@ module JavaBuildpack
 
         # Call Lena Install shell
         run_sh runShPath
-        
+        print "=== end complile ==== \n"
         # link_to(@application.root.children, root)
       end
 
