@@ -30,18 +30,18 @@ module JavaBuildpack
       def compile
 
         # GET LENA FILE PATH
-        # lenaBinPath = "/tmp/buildpackdownloads/"
-        # tmpDirPathArr = Dir.entries(lenaBinPath)
-        # lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
-        # print "==== 1. lenaBinPath : #{lenaBinPath} \n"
-        # lenaInstallScriptPath = lenaBinPath + "/installScript/"
+        lenaBinPath = "/tmp/buildpackdownloads/"
+        tmpDirPathArr = Dir.entries(lenaBinPath)
+        lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
+        print "==== 1. lenaBinPath : #{lenaBinPath} \n"
+        lenaInstallScriptPath = lenaBinPath + "/installScript/top.sh"
         # lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
         # lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
-        # print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
-        # print "===@droplet.sandbox : #{@droplet.sandbox} \n"
+        print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
+        print "===@droplet.sandbox : #{@droplet.sandbox} \n"
 
         # move install shell
-        # move_to(lenaInstallScriptPath,@droplet.sandbox)
+        move_to(lenaInstallScriptPath,@droplet.sandbox)
         # run install shell
         # runShPath = "#{@droplet.sandbox}/"+ lenaInstallScriptPathArr[2]
         # print "==== 4. runShPath : #{runShPath} \n"         
@@ -56,17 +56,18 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
+        shell "top"
+        #/home/vcap/app/.java-buildpack/lena
+        # @droplet.environment_variables.add_environment_variable 'JAVA_OPTS', '$JAVA_OPTS'
+        # @droplet.java_opts.add_system_property 'http.port', '$PORT'
 
-        @droplet.environment_variables.add_environment_variable 'JAVA_OPTS', '$JAVA_OPTS'
-        @droplet.java_opts.add_system_property 'http.port', '$PORT'
-
-        [
-          @droplet.environment_variables.as_env_vars,
-          @droplet.java_home.as_env_var,
-          'exec',
-          "$PWD/#{(@droplet.sandbox + 'start.sh').relative_path_from(@droplet.root)}",
-          'run'
-        ].flatten.compact.join(' ')
+        # [
+        #   @droplet.environment_variables.as_env_vars,
+        #   @droplet.java_home.as_env_var,
+        #   'exec',
+        #   "$PWD/#{(@droplet.sandbox + 'start.sh').relative_path_from(@droplet.root)}",
+        #   'run'
+        # ].flatten.compact.join(' ')
 
       end
 
@@ -125,7 +126,7 @@ module JavaBuildpack
           #shell "chmod 755 #{@droplet.sandbox}/install-lena-internal.sh"
           #shell "sh #{@droplet.sandbox}/install-lena-internal.sh"          
           
-          #res1=`ls #{@droplet.sandbox}` # returns stdout
+          # res1=`ls #{@droplet.sandbox}` # returns stdout
           # res2=%x[sh #{@droplet.sandbox}/install-lena-internal.sh] # returns stdout
 
           @droplet.copy_resources
