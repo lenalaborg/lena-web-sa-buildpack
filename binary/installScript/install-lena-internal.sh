@@ -10,11 +10,11 @@ WORKING_DIR=`cd $(dirname $0) ; pwd -P`
 echo "==== Set Parameter ===="   
 
 JAVA_HOME=/tmp/app/.java-buildpack/open_jdk_jre/
-LENA_HOME=/tmp/app/.java-buildpack/lena
-LENA_SERVER_TYPE=standard
-LENA_SERVICE_PORT=8080
-LENA_SERVER_NAME=appServer
-LENA_SERVER_HOME=/tmp/app/.java-buildpack/lena/servers/appServer
+LENA_HOME=/tmp/app/.java-buildpack/lenaw
+LENA_SERVER_TYPE=web
+LENA_SERVICE_PORT=7180
+LENA_SERVER_NAME=webServer
+LENA_SERVER_HOME=/tmp/app/.java-buildpack/lenaw/servers/webServer
 LENA_USER=vcap
 #Max Heap Mem Size
 #LENA_XMX=@{lena.xmx}
@@ -22,7 +22,7 @@ LENA_USER=vcap
 #LENA_XPX=@{lena.xpx}
 #Ubuntu Lib Download Url
 #LIB_DOWNLOAD_URL="@{download.lib.baseUrl}"
-#UBUNTU_LIBS=("libcrypto.so.10" "libpcre.so.0" "libssl.so.10")
+UBUNTU_LIBS=("libcrypto.so.10" "libpcre.so.0" "libssl.so.10")
 
 #build info
 #IMG_INFO_FILE=${LENA_HOME}/etc/info/image-build.info
@@ -42,8 +42,8 @@ LENA_USER=vcap
 
 case ${LENA_SERVER_TYPE} in
     web)
-    	# echo "${LENA_HOME}/bin/install.sh create lena-web ${JAVA_HOME} ${LENA_SERVER_NAME} ${LENA_SERVICE_PORT} ${LENA_USER}"
-        # ${LENA_HOME}/bin/install.sh create lena-web ${JAVA_HOME} ${LENA_SERVER_NAME} ${LENA_SERVICE_PORT} ${LENA_USER}
+    	echo "${LENA_HOME}/bin/install.sh create lena-web ${JAVA_HOME} ${LENA_SERVER_NAME} ${LENA_SERVICE_PORT} ${LENA_USER}"
+        ${LENA_HOME}/bin/install.sh create lena-web ${JAVA_HOME} ${LENA_SERVER_NAME} ${LENA_SERVICE_PORT} ${LENA_USER}
         # if [[ "${IMAGE_BASE}" =~ "amazonlinux2" ]]; then
         #     echo "mv ${LENA_HOME}/modules/lena-web-pe/lib/amzn2/* ${LENA_HOME}/modules/lena-web-pe/lib/"
         #     mv ${LENA_HOME}/modules/lena-web-pe/lib/amzn2/* ${LENA_HOME}/modules/lena-web-pe/lib/
@@ -53,30 +53,34 @@ case ${LENA_SERVER_TYPE} in
         # fi
         
         # if [[ "${OS_FAMILY}" =~ "ubuntu" ]] || [[ "${OS_FAMILY}" =~ "debian" ]]; then
-        #     echo "rm -f ${LENA_HOME}/modules/lena-web-pe/lib/*"
-        #     rm -f ${LENA_HOME}/modules/lena-web-pe/lib/*
-        #     for ubuntu_lib in "${UBUNTU_LIBS[@]}"; do
-        #     	echo "curl -o ${LENA_HOME}/modules/lena-web-pe/lib/${ubuntu_lib} ${LIB_DOWNLOAD_URL}/web/ubuntu/${ubuntu_lib}"
-        #     	curl -o ${LENA_HOME}/modules/lena-web-pe/lib/${ubuntu_lib} ${LIB_DOWNLOAD_URL}/web/ubuntu/${ubuntu_lib}
-        #     done;
+            # echo "rm -f ${LENA_HOME}/modules/lena-web-pe/lib/*"
+            # rm -f ${LENA_HOME}/modules/lena-web-pe/lib/*
+            # for ubuntu_lib in "${UBUNTU_LIBS[@]}"; do
+            # 	echo "curl -o ${LENA_HOME}/modules/lena-web-pe/lib/${ubuntu_lib} ${LIB_DOWNLOAD_URL}/web/ubuntu/${ubuntu_lib}"
+            # 	curl -o ${LENA_HOME}/modules/lena-web-pe/lib/${ubuntu_lib} ${LIB_DOWNLOAD_URL}/web/ubuntu/${ubuntu_lib}
+            # done;
+            echo "rm -f ${LENA_HOME}/modules/lena-web-pe/lib/*"
+            rm -f ${LENA_HOME}/modules/lena-web-pe/lib/*
+            echo "${LENA_HOME}/depot/lena-web-lib/ubuntu/* ${LENA_HOME}/modules/lena-web-pe/lib"
+            cp -f ${LENA_HOME}/depot/lena-web-lib/ubuntu/* ${LENA_HOME}/modules/lena-web-pe/lib
             
-        #     echo "Set Group of httpd to 'nogroup'"
-        #     echo "sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf"
-        #     sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
+            echo "Set Group of httpd to 'nogroup'"
+            echo "sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf"
+            sed -i "s/:q!\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
         # fi
-        # echo "Replace vhost_default.conf to use mod_proxy"
+        echo "Replace vhost_default.conf to use mod_proxy"
         # echo "curl -o ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf ${LIB_DOWNLOAD_URL}/web/vhost_default.conf_stdout"
         # curl -o ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf ${LIB_DOWNLOAD_URL}/web/vhost_default.conf_stdout
-        # #echo "curl -o ${LENA_SERVER_HOME}/conf/extra/proxy/proxy_vhost_default.conf ${LIB_DOWNLOAD_URL}/web/proxy_vhost_default.conf"
-        # #curl -o ${LENA_SERVER_HOME}/conf/extra/proxy/proxy_vhost_default.conf ${LIB_DOWNLOAD_URL}/web/proxy_vhost_default.conf
+        cp -f ${LENA_HOME}/depot/lena-web-lib/vhost_default.conf_stdout ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf
         
-        # echo "Change Log to StdOut/StdErr in httpd.conf"
-        # sed -i "s/^ErrorLog\s.*/ErrorLog \/dev\/stderr/g" ${LENA_SERVER_HOME}/conf/httpd.conf
-        # cat ${LENA_SERVER_HOME}/conf/httpd.conf | grep ErrorLog
+        echo "Change Log to StdOut/StdErr in httpd.conf"
+        sed -i "s/^ErrorLog\s.*/ErrorLog \/dev\/stderr/g" ${LENA_SERVER_HOME}/conf/httpd.conf
+        cat ${LENA_SERVER_HOME}/conf/httpd.conf | grep ErrorLog
         
-		# echo "Replace start.sh to Standard-out Logging"
+		echo "Replace start.sh to Standard-out Logging"
         # echo "curl -o ${LENA_SERVER_HOME}/start.sh ${LIB_DOWNLOAD_URL}/web/start.sh_stdout"
         # curl -o ${LENA_SERVER_HOME}/start.sh ${LIB_DOWNLOAD_URL}/web/start.sh_stdout
+        cp -f ${LENA_HOME}/depot/lena-web-lib/start.sh_stdout ${LENA_SERVER_HOME}/start.sh
         
         # echo "Create LENA logrotate configure path = /etc/logrotate.d/lenaw"
         # touch /etc/logrotate.d/lenaw
@@ -88,8 +92,8 @@ case ${LENA_SERVER_TYPE} in
         # echo "    dateext"                                    >> /etc/logrotate.d/lenaw
         # echo "}"                                              >> /etc/logrotate.d/lenaw
         
-        #echo "Change LOG_HOME to ${LENA_HOME}/logs/${SERVER_ID}"
-        #sed -i "s/\${INSTALL_PATH}\/logs/@{lena.home.regexp}\/logs\/\${SERVER_ID}/g" ${LENA_SERVER_HOME}/env.sh
+        # echo "Change LOG_HOME to ${LENA_HOME}/logs/${SERVER_ID}"
+        # sed -i "s/\${INSTALL_PATH}\/logs/@{lena.home.regexp}\/logs\/\${SERVER_ID}/g" ${LENA_SERVER_HOME}/env.sh
         ;;
     manager)
     	# echo "${LENA_HOME}/bin/install.sh create lena-manager ${JAVA_HOME} ${LENA_SERVICE_PORT} ${LENA_MGR_UDP_PORT} ${LENA_USER}"

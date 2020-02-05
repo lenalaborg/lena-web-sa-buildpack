@@ -29,27 +29,27 @@ module JavaBuildpack
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
 
-        # # GET LENA FILE PATH
-        # lenaBinPath = "/tmp/buildpackdownloads/"
-        # tmpDirPathArr = Dir.entries(lenaBinPath)
-        # lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
-        # print "==== 1. lenaBinPath : #{lenaBinPath} \n"
-        # lenaInstallScriptPath = lenaBinPath + "/installScript/top.sh"
-        # # lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
-        # # lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
-        # print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
+        # GET LENA FILE PATH
+        lenaBinPath = "/tmp/buildpackdownloads/"
+        tmpDirPathArr = Dir.entries(lenaBinPath)
+        lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
+        print "==== 1. lenaBinPath : #{lenaBinPath} \n"
+        lenaInstallScriptPath = lenaBinPath + "/installScript/"
+        # lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
+        lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
+        print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
          print "===@droplet.sandbox : #{@droplet.sandbox} \n"
 
-        # # move install shell
-        # move_to(lenaInstallScriptPath,@droplet.sandbox)
+        # move install shell
+        move_to(lenaInstallScriptPath,@droplet.sandbox)
         # run install shell
-        # runShPath = "#{@droplet.sandbox}/"+ lenaInstallScriptPathArr[2]
+        runShPath = "#{@droplet.sandbox}/"+ lenaInstallScriptPathArr[2]
         # print "==== 4. runShPath : #{runShPath} \n"         
 
         download(@version, @uri) { |file| expand file }
 
         # Call Lena Install shell
-        # run_sh runShPath
+        run_sh runShPath
         
         # link_to(@application.root.children, root)
       end
