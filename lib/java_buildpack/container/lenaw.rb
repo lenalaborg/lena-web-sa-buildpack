@@ -35,7 +35,7 @@ module JavaBuildpack
         lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
         print "==== 1. lenaBinPath : #{lenaBinPath} \n"
         lenaInstallScriptPath = lenaBinPath + "/installScript/"
-        # lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
+        lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
         lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
         print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
          print "===@droplet.sandbox : #{@droplet.sandbox} \n"
