@@ -51,7 +51,7 @@ module JavaBuildpack
         # Call Lena Install shell
         run_sh runShPath
         print "=== end complile ==== \n"
-        # link_to(@application.root.children, root)
+        link_to(@application.root.children, root)
       end
 
       # (see JavaBuildpack::Component::BaseComponent#release)
@@ -153,6 +153,11 @@ module JavaBuildpack
       def link_to(source, destination)
         FileUtils.mkdir_p destination
         source.each { |path| (destination + path.basename).make_symlink(path.relative_path_from(destination)) }
+
+        sourceArr = Dir.entries(source)
+         print "==== 1. sourceArr : #{sourceArr} \n"
+         destinationArr = Dir.entries(destination)
+         print "==== 1. destinationArr : #{destinationArr} \n"
       end
 
       def move_to(source, destination)
