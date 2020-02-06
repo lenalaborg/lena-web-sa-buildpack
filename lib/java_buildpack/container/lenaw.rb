@@ -51,7 +51,14 @@ module JavaBuildpack
         # Call Lena Install shell
         run_sh runShPath
         print "=== end complile ==== \n"
-        link_to(@application.root.children, root)
+        #link_to(@application.root.children, root)
+
+        # move proxy conf
+        userProxyPath="#{@application.root.children}/proxy.conf"
+        print "********** userProxyPath : #{userProxyPath} ********** \n"
+        lenaProxyPath = "/tmp/app/.java-buildpack/lenaw/servers/webServer/conf/extra/proxy/proxy_vhost_default.conf"
+        print "********** lenaProxyPath : #{lenaProxyPath} ********** \n"
+        move_to(userProxyPath,lenaProxyPath)
         
       end
 
