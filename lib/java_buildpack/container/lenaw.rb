@@ -112,13 +112,13 @@ module JavaBuildpack
       end
 
       def move_to(source, destination)
-        print "#{'----->'.green.bold} move file from  #{source} to #{destination}  \n"
+        print "#{'----->'.green.bold} move file from  #{source.green.bold} to #{destination.green.bold}  \n"
         FileUtils.mkdir_p destination
         shell "mv #{source} #{destination}" 
       end
 
       def move_to2(source, destination)
-        print "#{'----->'.green.bold} move file from  #{source} to #{destination}  \n"
+        print "#{'----->'.green.bold} move file from  #{source.green.bold} to #{destination.green.bold}  \n"
         shell "mv #{source} #{destination}" 
       end
 
