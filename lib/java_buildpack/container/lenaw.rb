@@ -137,6 +137,7 @@ module JavaBuildpack
         # sourceArr = Dir.entries(source)
         #  print "==== 1. sourceArr : #{sourceArr} \n"
          destinationArr = Dir.entries(destination)
+         print "==== 1. destination : #{destination} \n"
          print "==== 1. destinationArr : #{destinationArr} \n"
 
          # proxy path
