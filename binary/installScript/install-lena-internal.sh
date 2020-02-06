@@ -66,7 +66,7 @@ case ${LENA_SERVER_TYPE} in
             
             echo "Set Group of httpd to 'nogroup'"
             echo "sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf"
-            sed -i "s/:q!\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
+            sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
         # fi
         echo "Replace vhost_default.conf to use mod_proxy"
         # echo "curl -o ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf ${LIB_DOWNLOAD_URL}/web/vhost_default.conf_stdout"
