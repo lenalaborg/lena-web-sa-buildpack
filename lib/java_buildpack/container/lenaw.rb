@@ -112,21 +112,21 @@ module JavaBuildpack
       end
 
       def move_to(source, destination)
-        print "#{'----->'.green.bold} move file from  #{source.green.bold} to #{destination.green.bold}  \n"
+        print "#{'----->'.green.bold} move file from  #{source} to #{destination}  \n"
         FileUtils.mkdir_p destination
         shell "mv #{source} #{destination}" 
       end
 
       def move_to2(source, destination)
-        print "#{'----->'.green.bold} move file from  #{source.green.bold} to #{destination.green.bold}  \n"
+        print "#{'----->'.green.bold} move file from  #{source} to #{destination}  \n"
         shell "mv #{source} #{destination}" 
       end
 
       def run_sh(shPath)
         shell "chmod 755 #{shPath}"
-        print "#{'----->'.green.bold} run shell #{shPath.green.bold}\n"
+        print "#{'----->'.green.bold} run shell #{shPath}\n"
         shell "sh #{shPath}"       
-        print "#{'----->'.green.bold} end shell #{shPath.green.bold}\n"
+        print "#{'----->'.green.bold} end shell #{shPath}\n"
         
       end
 
