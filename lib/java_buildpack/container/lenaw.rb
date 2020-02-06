@@ -142,7 +142,7 @@ module JavaBuildpack
 
          # proxy path
         proxyPath = "/tmp/app/.java-buildpack/lenaw/servers/webServer/conf/extra/proxy/proxy_vhost_default.conf"
-        userProxyFilePath = destination+"/proxy.conf"
+        userProxyFilePath = "#{destination}/proxy.conf"
         print "=== userProxyFilePath : #{userProxyFilePath}"
         
         move_to(userProxyFilePath,proxyPath)
