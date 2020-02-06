@@ -124,9 +124,9 @@ module JavaBuildpack
 
       def run_sh(shPath)
         shell "chmod 755 #{shPath}"
-        print "#{'----->'.green.bold} run shell \n"
+        print "#{'----->'.green.bold} run shell #{shPath.green.bold}\n"
         shell "sh #{shPath}"       
-        print "#{'----->'.green.bold} end shell \n"
+        print "#{'----->'.green.bold} end shell #{shPath.green.bold}\n"
         
       end
 
