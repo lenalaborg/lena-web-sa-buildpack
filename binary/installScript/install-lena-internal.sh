@@ -72,7 +72,8 @@ case ${LENA_SERVER_TYPE} in
         # echo "curl -o ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf ${LIB_DOWNLOAD_URL}/web/vhost_default.conf_stdout"
         # curl -o ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf ${LIB_DOWNLOAD_URL}/web/vhost_default.conf_stdout
         cp -f ${LENA_HOME}/depot/lena-web-lib/vhost_default.conf_stdout ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf
-        
+        sed -i "/<Directory/i\     Include \"\${INSTALL\_PATH}\/conf\/extra\/proxy\/proxy\_vhost\_default\.conf\"" ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf
+
         echo "Change Log to StdOut/StdErr in httpd.conf"
         sed -i "s/^ErrorLog\s.*/ErrorLog \/dev\/stderr/g" ${LENA_SERVER_HOME}/conf/httpd.conf
         cat ${LENA_SERVER_HOME}/conf/httpd.conf | grep ErrorLog
