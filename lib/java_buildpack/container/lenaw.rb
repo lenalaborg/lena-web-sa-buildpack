@@ -58,7 +58,7 @@ module JavaBuildpack
         print "********** userProxyPath : #{userProxyPath} ********** \n"
         lenaProxyPath = "/tmp/app/.java-buildpack/lenaw/servers/webServer/conf/extra/proxy/proxy_vhost_default.conf"
         print "********** lenaProxyPath : #{lenaProxyPath} ********** \n"
-        move_to(userProxyPath,lenaProxyPath)
+        move_to2(userProxyPath,lenaProxyPath)
         
       end
 
@@ -158,6 +158,11 @@ module JavaBuildpack
       def move_to(source, destination)
         print "==== move file from  #{source} to #{destination}  ==== \n"
         FileUtils.mkdir_p destination
+        shell "mv #{source} #{destination}" 
+      end
+
+      def move_to2(source, destination)
+        print "==== move file from  #{source} to #{destination}  ==== \n"
         shell "mv #{source} #{destination}" 
       end
 
