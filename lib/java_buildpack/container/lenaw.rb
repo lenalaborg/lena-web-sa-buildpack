@@ -29,43 +29,33 @@ module JavaBuildpack
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
 
-        # GET LENA FILE PATH
+        # download lena install file
+        download(@version, @uri) { |file| expand file }
+
+        # GET LENA Install Shell FILE PATH
         lenaBinPath = "/tmp/buildpackdownloads/"
         tmpDirPathArr = Dir.entries(lenaBinPath)
         lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
-        print "==== 1. lenaBinPath : #{lenaBinPath} \n"
         lenaInstallScriptPath = lenaBinPath + "/installScript/"
         lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
         lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
-        print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
-        print "=== @droplet.sandbox : #{@droplet.sandbox} \n"
+
 
         # move install shell
         move_to(lenaInstallScriptPath,@droplet.sandbox)
         # run install shell
         runShPath = "#{@droplet.sandbox}/"+ lenaInstallScriptPathArr[2]
-        # print "==== 4. runShPath : #{runShPath} \n"         
-
-        download(@version, @uri) { |file| expand file }
-
         # Call Lena Install shell
         run_sh runShPath
-        print "=== end complile ==== \n"
-        #link_to(@application.root.children, root)
-
         # move proxy conf
         userProxyPath="/tmp/app/proxy.conf"
-        print "********** userProxyPath : #{userProxyPath} ********** \n"
         lenaProxyPath = "/tmp/app/.java-buildpack/lenaw/servers/webServer/conf/extra/proxy/proxy_vhost_default.conf"
-        print "********** lenaProxyPath : #{lenaProxyPath} ********** \n"
         move_to2(userProxyPath,lenaProxyPath)
         
       end
 
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
-        #  shell "top"
-        # #/home/vcap/app/.java-buildpack/lena
         @droplet.environment_variables.add_environment_variable 'JAVA_OPTS', '$JAVA_OPTS'
         @droplet.java_opts.add_system_property 'http.port', '$PORT'
 
@@ -89,16 +79,6 @@ module JavaBuildpack
 
       private
 
-      def copy_application
-        #link_to(@application.root.children, root)
-        FileUtils.mkdir_p root
-        @application.root.children.each { |child| FileUtils.cp_r child, root }
-      end
-
-      def create_dodeploy #debug jboss
-        FileUtils.touch(webapps + 'ROOT.war.dodeploy')
-      end
-
       def root
         @droplet.sandbox + 'webhome/autodeploy/test'
       end
@@ -114,10 +94,6 @@ module JavaBuildpack
           shell "tar xzf #{file.path} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
 
           @droplet.copy_resources
-
-            tarPath = "/tmp/app/.java-buildpack/lenaw/"
-         tmpDirPathArr = Dir.entries(tarPath)
-         print "==== 1. tmpDirPathArr : #{tmpDirPathArr} \n"
         
         end
       end
@@ -130,48 +106,27 @@ module JavaBuildpack
 
           @droplet.copy_resources
 
-          print "------------------------ Expanding By Path LENA --------------------------"
+          print "\n#{'----->'.green.bold} Expanding By Path LENA  \n"
           
         end
       end
 
-      def link_to(source, destination)
-        FileUtils.mkdir_p destination
-        source.each { |path| (destination + path.basename).make_symlink(path.relative_path_from(destination)) }
-
-        print "==== source path : #{source} \n"
-        print "==== destination path : #{destination} \n"
-        # sourceArr = Dir.entries(source)
-        #  print "==== 1. sourceArr : #{sourceArr} \n"
-         destinationArr = Dir.entries(destination)
-         print "==== 1. destination : #{destination} \n"
-         print "==== 1. destinationArr : #{destinationArr} \n"
-
-         # proxy path
-        proxyPath = "/tmp/app/.java-buildpack/lenaw/servers/webServer/conf/extra/proxy/proxy_vhost_default.conf"
-        userProxyFilePath = "#{destination}/proxy.conf"
-        print "=== userProxyFilePath : #{userProxyFilePath}"
-        
-        move_to(userProxyFilePath,proxyPath)
-      end
-
       def move_to(source, destination)
-        print "==== move file from  #{source} to #{destination}  ==== \n"
+        print "#{'----->'.green.bold} move file from  #{source} to #{destination}  \n"
         FileUtils.mkdir_p destination
         shell "mv #{source} #{destination}" 
       end
 
       def move_to2(source, destination)
-        print "==== move file from  #{source} to #{destination}  ==== \n"
+        print "#{'----->'.green.bold} move file from  #{source} to #{destination}  \n"
         shell "mv #{source} #{destination}" 
       end
 
       def run_sh(shPath)
-        print "==== run shell #{shPath} ==== \n"
         shell "chmod 755 #{shPath}"
-        print "==== call shell ==== \n"
+        print "#{'----->'.green.bold} run shell \n"
         shell "sh #{shPath}"       
-        print "==== end shell ==== \n"
+        print "#{'----->'.green.bold} end shell \n"
         
       end
 
