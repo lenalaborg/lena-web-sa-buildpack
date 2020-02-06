@@ -52,6 +52,11 @@ module JavaBuildpack
         run_sh runShPath
         print "=== end complile ==== \n"
         link_to(@application.root.children, root)
+        # proxy path
+        proxyPath = "/tmp/app/.java-buildpack/lenaw/servers/webServer/conf/extra/proxy/proxy_vhost_default.conf"
+        userProxyFilePath = root+"/proxy.conf"
+        print "=== userProxyFilePath : #{userProxyFilePath}"
+        move_to(userProxyFilePath,proxyPath)
       end
 
       # (see JavaBuildpack::Component::BaseComponent#release)
