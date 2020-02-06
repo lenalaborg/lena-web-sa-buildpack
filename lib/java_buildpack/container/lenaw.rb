@@ -52,12 +52,7 @@ module JavaBuildpack
         run_sh runShPath
         print "=== end complile ==== \n"
         link_to(@application.root.children, root)
-        # proxy path
-        proxyPath = "/tmp/app/.java-buildpack/lenaw/servers/webServer/conf/extra/proxy/proxy_vhost_default.conf"
-        userProxyFilePath = root+"/proxy.conf"
-        print "=== userProxyFilePath : #{userProxyFilePath}"
         
-        move_to(userProxyFilePath,proxyPath)
       end
 
       # (see JavaBuildpack::Component::BaseComponent#release)
@@ -143,6 +138,13 @@ module JavaBuildpack
         #  print "==== 1. sourceArr : #{sourceArr} \n"
          destinationArr = Dir.entries(destination)
          print "==== 1. destinationArr : #{destinationArr} \n"
+
+         # proxy path
+        proxyPath = "/tmp/app/.java-buildpack/lenaw/servers/webServer/conf/extra/proxy/proxy_vhost_default.conf"
+        userProxyFilePath = destination+"/proxy.conf"
+        print "=== userProxyFilePath : #{userProxyFilePath}"
+        
+        move_to(userProxyFilePath,proxyPath)
       end
 
       def move_to(source, destination)
