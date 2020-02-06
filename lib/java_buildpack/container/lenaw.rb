@@ -107,21 +107,10 @@ module JavaBuildpack
 
           @droplet.copy_resources
 
-          print "------------------------ Expanding LENA --------------------------"
-
-
             tarPath = "/tmp/app/.java-buildpack/lenaw/"
          tmpDirPathArr = Dir.entries(tarPath)
          print "==== 1. tmpDirPathArr : #{tmpDirPathArr} \n"
-        # lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
-        # print "==== 1. lenaBinPath : #{lenaBinPath} \n"
-        # lenaInstallScriptPath = lenaBinPath + "/installScript/top.sh"
-        # # lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
-        # # lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
-        # print "==== 3. lenaInstallScriptPath : #{lenaInstallScriptPath} \n" 
-
-          #configure_linking
-          #configure_jasper
+        
         end
       end
 
@@ -129,24 +118,12 @@ module JavaBuildpack
         with_timing "Expanding By Path #{@component_name} to #{@droplet.sandbox.relative_path_from(@droplet.root)}" do
           FileUtils.mkdir_p @droplet.sandbox
           
-          #installFilePath=filePath+"lena-was-1.3.1.tar.gz"
           shell "tar xzf #{filePath} -C #{@droplet.sandbox} --strip 1 --exclude webapps 2>&1"
-
-          #installScriptPath=filePath+"install-lena-internal.sh"
-          #shell "mv #{installScriptPath} #{@droplet.sandbox}" 
-          #shell "chmod 755 #{@droplet.sandbox}/install-lena-internal.sh"
-          #shell "sh #{@droplet.sandbox}/install-lena-internal.sh"          
-          
-          # res1=`ls #{@droplet.sandbox}` # returns stdout
-          # res2=%x[sh #{@droplet.sandbox}/install-lena-internal.sh] # returns stdout
 
           @droplet.copy_resources
 
           print "------------------------ Expanding By Path LENA --------------------------"
-          #print "#{res1}"
-
-          #configure_linking
-          #configure_jasper
+          
         end
       end
 
@@ -154,6 +131,8 @@ module JavaBuildpack
         FileUtils.mkdir_p destination
         source.each { |path| (destination + path.basename).make_symlink(path.relative_path_from(destination)) }
 
+        print "==== source path : #{source} \n"
+        print "==== destination path : #{destination} \n"
         # sourceArr = Dir.entries(source)
         #  print "==== 1. sourceArr : #{sourceArr} \n"
          destinationArr = Dir.entries(destination)
