@@ -154,8 +154,8 @@ module JavaBuildpack
         FileUtils.mkdir_p destination
         source.each { |path| (destination + path.basename).make_symlink(path.relative_path_from(destination)) }
 
-        sourceArr = Dir.entries(source)
-         print "==== 1. sourceArr : #{sourceArr} \n"
+        # sourceArr = Dir.entries(source)
+        #  print "==== 1. sourceArr : #{sourceArr} \n"
          destinationArr = Dir.entries(destination)
          print "==== 1. destinationArr : #{destinationArr} \n"
       end
