@@ -52,6 +52,7 @@ case ${LENA_SERVER_TYPE} in
         echo "==== Set root path ==="
         sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_SERVER_HOME}/env.sh
         sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_HOME}/etc/info/java-home.info
+        sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_HOME}/etc/info/install-info.xml
         ;;
     manager)
     	# echo "${LENA_HOME}/bin/install.sh create lena-manager ${JAVA_HOME} ${LENA_SERVICE_PORT} ${LENA_MGR_UDP_PORT} ${LENA_USER}"
