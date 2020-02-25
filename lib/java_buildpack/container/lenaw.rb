@@ -28,25 +28,33 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
-
-        # download lena install file
-        download(@version, @uri) { |file| expand file }
-
-        # GET LENA Install Shell FILE PATH
+        
+        # GET LENA FILE PATH
         lenaBinPath = "/tmp/buildpackdownloads/"
         tmpDirPathArr = Dir.entries(lenaBinPath)
         lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
+
         lenaInstallScriptPath = lenaBinPath + "/installScript/"
         lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
         lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
 
+        lenaEntryScriptPath = lenaBinPath + "/entryScript/"
+        lenaEntryScriptPathArr = Dir.entries(lenaEntryScriptPath)
+        lenaEntryScriptPath = lenaEntryScriptPath + lenaEntryScriptPathArr[2]
 
-        # move install shell
+        # move install shell / entry shell
         move_to(lenaInstallScriptPath,@droplet.sandbox)
-        # run install shell
-        runShPath = "#{@droplet.sandbox}/"+ lenaInstallScriptPathArr[2]
+        installShPath = "#{@droplet.sandbox}/"+ lenaInstallScriptPathArr[2]
+        chmod(installShPath,755)
+        move_to(lenaEntryScriptPath,@droplet.sandbox)
+        entryShPath = "#{@droplet.sandbox}/"+ lenaEntryScriptPathArr[2]
+        chmod(entryShPath,755)
+
+        # Download LENA WEB install file and extract
+        download(@version, @uri) { |file| expand file }
         # Call Lena Install shell
-        run_sh runShPath
+        run_sh installShPath
+
         # move proxy conf
         userProxyPath="/tmp/app/proxy.conf"
         lenaProxyPath = "/tmp/app/.java-buildpack/lenaw/servers/webServer/conf/extra/proxy/proxy_vhost_default.conf"
@@ -56,6 +64,7 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
+        # "$PWD/#{(@droplet.sandbox + 'entrypoint.sh').relative_path_from(@droplet.root)}",
         @droplet.environment_variables.add_environment_variable 'JAVA_OPTS', '$JAVA_OPTS'
         @droplet.java_opts.add_system_property 'http.port', '$PORT'
 
@@ -78,6 +87,16 @@ module JavaBuildpack
       end
 
       private
+
+      def copy_application
+        #link_to(@application.root.children, root)
+        FileUtils.mkdir_p root
+        @application.root.children.each { |child| FileUtils.cp_r child, root }
+      end
+
+      def create_dodeploy #debug jboss
+        FileUtils.touch(webapps + 'ROOT.war.dodeploy')
+      end
 
       def root
         @droplet.sandbox + 'webhome/autodeploy/test'
@@ -106,13 +125,17 @@ module JavaBuildpack
 
           @droplet.copy_resources
 
-          print "\n#{'----->'.green.bold} Expanding By Path LENA  \n"
-          
+          print "\n#{'----->'.green.bold} Expanding By Path LENA  \n"          
         end
       end
 
+      def link_to(source, destination)
+        FileUtils.mkdir_p destination
+        source.each { |path| (destination + path.basename).make_symlink(path.relative_path_from(destination)) }
+      end
+
       def move_to(source, destination)
-        print "#{'----->'.green.bold} move file from  #{source} to #{destination}  \n"
+        print "#{'----->'.green.bold} move file from  #{source} to #{destination}   \n"
         FileUtils.mkdir_p destination
         shell "mv #{source} #{destination}" 
       end
@@ -123,11 +146,13 @@ module JavaBuildpack
       end
 
       def run_sh(shPath)
-        shell "chmod 755 #{shPath}"
-        print "#{'----->'.green.bold} run shell #{shPath}\n"
+        print "#{'----->'.green.bold} run shell #{shPath}  \n"
         shell "sh #{shPath}"       
-        print "#{'----->'.green.bold} end shell #{shPath}\n"
-        
+      end
+      
+      def chmod(shPath, authVar)
+            print "#{'----->'.green.bold} chmod  #{authVar} #{shPath}  \n"
+            shell "chmod #{authVar} #{shPath}"   
       end
 
     end
