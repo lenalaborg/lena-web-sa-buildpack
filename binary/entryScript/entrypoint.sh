@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #docker-entrypoint for LENA
-LENA_HOME=/home/vcap/app/.java-buildpack/lena
+LENA_HOME=/home/vcap/app/.java-buildpack/lenaw
 
 LENA_SERVER_TYPE=web
 LENA_USER=vcap
