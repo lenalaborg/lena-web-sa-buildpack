@@ -89,7 +89,7 @@ start_lena_server() {
 		_START_OPTION=""
     fi
 
-    log "su ${LENA_USER} -c ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}" 
+    log "${LENA_SERVER_HOME}/start.sh ${_START_OPTION}" 
     #su ${LENA_USER} -c ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}
     ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}
     log " " 
@@ -456,6 +456,8 @@ download_template() {
             echo "Set Group of httpd to 'nogroup'"
             echo "sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf"
             sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
+            # change LENA SERVER HOME path from kubernetes to paas-ta(cf)
+            sed -i "s/usr\/local\/lenaw/home\/vcap\/app\/.java-buildpack\/lenaw/g" ${LENA_SERVER_HOME}/env.sh
         fi
         
     fi
