@@ -7,6 +7,6 @@ java buildpack 의 경우 tomcat 을 사용하도록 되어있으나, 해당 bui
 cf push 수행시 아래와 같이 본 빌드팩 의 github url 을 참조하도록 합니다.
 
 ```bash
-$ cf push -b https://github.com/lenalaborg/lena-was-sa-buildpack.git
+$ cf push -b https://github.com/lenalaborg/lena-web-sa-buildpack.git
 ```
 
