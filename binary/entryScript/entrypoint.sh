@@ -458,6 +458,7 @@ download_template() {
             sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
             # change LENA SERVER HOME path from kubernetes to paas-ta(cf)
             sed -i "s/usr\/local\/lenaw/home\/vcap\/app\/.java-buildpack\/lenaw/g" ${LENA_SERVER_HOME}/env.sh
+            sed -i "s/7180/8080/g" ${LENA_SERVER_HOME}/env.sh
         fi
         
     fi
@@ -817,6 +818,6 @@ if [ "${LENA_SERVER_START_OPT}" = "background" ]; then
         tail -f /dev/null & wait ${!}
     done
 else
-	stop_lena_agent
+	#stop_lena_agent
 fi
 
