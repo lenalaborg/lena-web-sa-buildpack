@@ -5,7 +5,7 @@ LENA_HOME=/home/vcap/app/.java-buildpack/lenaw
 
 LENA_SERVER_TYPE=web
 LENA_USER=vcap
-LENA_SERVER_HOME=${LENA_HOME}/servers/appServer
+LENA_SERVER_HOME=${LENA_HOME}/servers/webServer
 LENA_SERVER_START_OPT=foreground
 LENA_AGENT_PORT=16900
 
