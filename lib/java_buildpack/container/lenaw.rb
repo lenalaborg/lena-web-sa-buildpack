@@ -65,6 +65,7 @@ module JavaBuildpack
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
         # "$PWD/#{(@droplet.sandbox + 'entrypoint.sh').relative_path_from(@droplet.root)}",
+        # "$PWD/#{(@droplet.sandbox + 'servers/webServer/start.sh').relative_path_from(@droplet.root)}",
         @droplet.environment_variables.add_environment_variable 'JAVA_OPTS', '$JAVA_OPTS'
         @droplet.java_opts.add_system_property 'http.port', '$PORT'
 
@@ -72,7 +73,7 @@ module JavaBuildpack
           @droplet.environment_variables.as_env_vars,
           @droplet.java_home.as_env_var,
           'exec',
-          "$PWD/#{(@droplet.sandbox + 'servers/webServer/start.sh').relative_path_from(@droplet.root)}",
+          "$PWD/#{(@droplet.sandbox + 'entrypoint.sh').relative_path_from(@droplet.root)}",
           'run'
         ].flatten.compact.join(' ')
 

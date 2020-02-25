@@ -60,6 +60,22 @@ start_lena_agent() {
     log "LENA Agent PID : ${PID}"
 }
 
+# Start up lena agent
+start_lena_web_agent() {
+    rm -f ${LENA_HOME}/etc/info/node-uuid.info
+    
+    # Run lena-agent
+    log "------------------------------------------------------"
+    log "---------- LENA WEB Server Node Agent Start ----------"
+    log "------------------------------------------------------"
+    log "su ${LENA_USER} -c ${LENA_HOME}/bin/start-agent.sh"
+    cd ${LENA_HOME}/bin/
+    su ${LENA_USER} -c "${LENA_HOME}/bin/start-agent.sh"
+    PS_RESULT=`${LENA_HOME}/bin/ps-agent.sh`
+    PID=`echo ${PS_RESULT} | awk '{print $2}'`
+    log "LENA Agent PID : ${PID}"
+}
+
 # Start lena server
 start_lena_server() {
     # Run lena server
@@ -237,12 +253,7 @@ config_was_log() {
     	# Access Log
     	sed -i "s/argo\.server\.valves\.StdoutAccessLogValve/org\.apache\.catalina\.valves\.AccessLogValve/g" ${LENA_SERVER_HOME}/conf/server.xml
     	sed -i "s/valves\.AccessLogValve\"/valves\.AccessLogValve\" rotatable\=\"false\"/g" ${LENA_SERVER_HOME}/conf/server.xml
-    	# Stdout Log
-    	sed -i "s/\#touch \"\$CATALINA\_OUT\"/touch \"\$CATALINA\_OUT\"/g"  ${LENA_SERVER_HOME}/bin/catalina.sh
-    	sed -i "s/2>\&1 | \${CATALINA\_HOME}\/bin\/LOGS\.pl \${CATALINA\_OUT}/>> \"\$CATALINA\_OUT\" 2>\&1 /g"  ${LENA_SERVER_HOME}/bin/catalina.sh
-    	sed -i "s/{INST_NAME}\.out/{INST_NAME}\.out\.log/g" ${LENA_SERVER_HOME}/env.sh 
-    	
-    	
+
     else 
     	log "LOG output type is console" 
     	sed -i "s/LOG_OUTPUT=.*/LOG_OUTPUT=console/g" ${LENA_SERVER_HOME}/bin/setenv.sh
@@ -350,6 +361,40 @@ config_web_log() {
     
 }
 
+# Create web agent.conf
+create_web_agent_conf() {
+
+	echo "#Agent Configuration"					 >> ${LENA_HOME}/conf/agent.conf
+	echo "advertiser.server.port=16100"			 >> ${LENA_HOME}/conf/agent.conf
+	echo "advertiser.enable=true"				 >> ${LENA_HOME}/conf/agent.conf
+	echo "status.check.interval=2000"			 >> ${LENA_HOME}/conf/agent.conf
+	echo "agent.server.worker=32"				 >> ${LENA_HOME}/conf/agent.conf
+	echo "advertiser.interval=2000" 			 >> ${LENA_HOME}/conf/agent.conf
+	echo "agent.server.port=16900"				 >> ${LENA_HOME}/conf/agent.conf
+	echo "agent.server.user=root"				 >> ${LENA_HOME}/conf/agent.conf
+
+    if [[ ! -z "${LENA_MANAGER_ADDRESS}" ]]; then
+        INDEX=`expr index "${LENA_MANAGER_ADDRESS}" :`
+		VAR_LENA_MANAGER_PORT=${LENA_MANAGER_ADDRESS:${INDEX}}
+		echo "advertiser.server.httpPort=${VAR_LENA_MANAGER_PORT}"		 >> ${LENA_HOME}/conf/agent.conf
+		INDEX=`expr $INDEX - 1`
+		VAR_LENA_MANAGER_ADDRESS=`expr substr "${LENA_MANAGER_ADDRESS}" 1 $INDEX`
+		echo "advertiser.server.address=${VAR_LENA_MANAGER_ADDRESS}"	 >> ${LENA_HOME}/conf/agent.conf
+		        
+		
+    fi
+    if [[ ! -z "${LENA_CONFIG_TEMPLATE_ID}" ]]; then
+	    INDEX=`expr index "${LENA_CONFIG_TEMPLATE_ID}" :`
+		if [ "$INDEX" -eq 0 ]; then
+			CONTAINER_GROUP_NAME=${LENA_CONFIG_TEMPLATE_ID}
+		else
+			INDEX=`expr $INDEX - 1`
+			CONTAINER_GROUP_NAME=`expr substr "${LENA_CONFIG_TEMPLATE_ID}" 1 $INDEX`
+		fi
+		echo "container.group.name=${CONTAINER_GROUP_NAME}" >> ${LENA_HOME}/conf/agent.conf
+    fi
+}
+
 # Config advertiser server setup
 config_advertiser() {
 	ADVERTISER_SERVICE=""
@@ -396,11 +441,6 @@ download_template() {
 		_CONNECT_TIMEOUT=${LENA_DOWNLOAD_CONNECT_TIMEOUT}
 	fi
 
-    log "LENA_CONFIG_TEMPLATE_DOWNLOAD : ${LENA_CONFIG_TEMPLATE_DOWNLOAD}"
-    log "LENA_MANAGER_ADDRESS: ${LENA_MANAGER_ADDRESS}"
-    log "LENA_CONFIG_TEMPLATE_ID : ${LENA_CONFIG_TEMPLATE_ID}"
-    log "LENA_MANAGER_KEY : ${LENA_MANAGER_KEY}" 
-	
     if [[ "${LENA_CONFIG_TEMPLATE_DOWNLOAD}" = "Y" ]] && [[ ! -z "${LENA_MANAGER_ADDRESS}" ]] && [[ ! -z "${LENA_CONFIG_TEMPLATE_ID}" ]] && [[ ! -z "${LENA_MANAGER_KEY}" ]]; then
     	log "Download template from LENA Manager ${LENA_MANAGER_ADDRESS}, ContainerGroupName-Version : ${TEMPLATE_TAG}"
     	log "curl -o ${LENA_SERVER_HOME}/template.zip --connect-timeout ${_CONNECT_TIMEOUT} --max-time ${_MAX_TIME} http://${LENA_MANAGER_ADDRESS}/lena/rest/template/download/container/${LENA_CONFIG_TEMPLATE_ID}?key=${LENA_MANAGER_KEY}"
@@ -676,10 +716,20 @@ _start() {
 	        config_manager $*
 	   		start_lena_manager $*
 	        ;;
-	    web)
-	        config_web_log $*
+	    # web)
+	    #     config_web_log $*
+		# 	if [[ "${LENA_AGENT_RUN}" = "Y" ]]; then
+		# 		start_lena_agent $*
+		# 		sleep 3
+		# 	fi
+		# 	start_lena_server $*
+	    #     ;;
+        web)
+	        download_template $*	        
+	        config_web_log $*	        
 			if [[ "${LENA_AGENT_RUN}" = "Y" ]]; then
-				start_lena_agent $*
+			    create_web_agent_conf $*
+				start_lena_web_agent $*
 				sleep 3
 			fi
 			start_lena_server $*
