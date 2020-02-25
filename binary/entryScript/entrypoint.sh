@@ -70,7 +70,8 @@ start_lena_web_agent() {
     log "------------------------------------------------------"
     log "su ${LENA_USER} -c ${LENA_HOME}/bin/start-agent.sh"
     cd ${LENA_HOME}/bin/
-    su ${LENA_USER} -c "${LENA_HOME}/bin/start-agent.sh"
+    #su ${LENA_USER} -c "${LENA_HOME}/bin/start-agent.sh"
+    ${LENA_HOME}/bin/start-agent.sh
     PS_RESULT=`${LENA_HOME}/bin/ps-agent.sh`
     PID=`echo ${PS_RESULT} | awk '{print $2}'`
     log "LENA Agent PID : ${PID}"
@@ -355,7 +356,7 @@ config_web_log() {
     fi
     
     #call logrotate config function
-    config_logrotate
+    #config_logrotate
     
     
     
