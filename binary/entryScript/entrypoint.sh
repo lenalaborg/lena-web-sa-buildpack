@@ -372,7 +372,7 @@ create_web_agent_conf() {
 	echo "agent.server.worker=32"				 >> ${LENA_HOME}/conf/agent.conf
 	echo "advertiser.interval=2000" 			 >> ${LENA_HOME}/conf/agent.conf
 	echo "agent.server.port=16900"				 >> ${LENA_HOME}/conf/agent.conf
-	echo "agent.server.user=root"				 >> ${LENA_HOME}/conf/agent.conf
+	echo "agent.server.user=vcap"				 >> ${LENA_HOME}/conf/agent.conf
 
     if [[ ! -z "${LENA_MANAGER_ADDRESS}" ]]; then
         INDEX=`expr index "${LENA_MANAGER_ADDRESS}" :`
@@ -450,6 +450,14 @@ download_template() {
     	chmod +x ${LENA_SERVER_HOME}/*.sh 
     	chmod +x ${LENA_SERVER_HOME}/bin/*.sh
     	chown -R ${LENA_USER}:${LENA_USER} ${LENA_SERVER_HOME}
+
+        if [ "${LENA_SERVER_TYPE}" = "web" ]; then
+            # Set Group from nobody to nogroup for ubuntu   
+            echo "Set Group of httpd to 'nogroup'"
+            echo "sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf"
+            sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
+        fi
+        
     fi
 }
 

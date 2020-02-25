@@ -51,6 +51,7 @@ case ${LENA_SERVER_TYPE} in
         # Change Path - Application location is different when creating droplets and launching images
         echo "==== Set root path ==="
         sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_SERVER_HOME}/env.sh
+        sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_HOME}/etc/info/java-home.info
         ;;
     manager)
     	# echo "${LENA_HOME}/bin/install.sh create lena-manager ${JAVA_HOME} ${LENA_SERVICE_PORT} ${LENA_MGR_UDP_PORT} ${LENA_USER}"
