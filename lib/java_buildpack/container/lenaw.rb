@@ -34,10 +34,12 @@ module JavaBuildpack
         tmpDirPathArr = Dir.entries(lenaBinPath)
         lenaBinPath = lenaBinPath+tmpDirPathArr[2]+"/binary"
 
+        # LENA Install file (이미지 생성시 사용)
         lenaInstallScriptPath = lenaBinPath + "/installScript/"
         lenaInstallScriptPathArr = Dir.entries(lenaInstallScriptPath)
         lenaInstallScriptPath = lenaInstallScriptPath + lenaInstallScriptPathArr[2]
 
+        # LENA entrypoint file (컨테이너 기동시 사용)
         lenaEntryScriptPath = lenaBinPath + "/entryScript/"
         lenaEntryScriptPathArr = Dir.entries(lenaEntryScriptPath)
         lenaEntryScriptPath = lenaEntryScriptPath + lenaEntryScriptPathArr[2]
@@ -64,8 +66,6 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
-        # "$PWD/#{(@droplet.sandbox + 'entrypoint.sh').relative_path_from(@droplet.root)}",
-        # "$PWD/#{(@droplet.sandbox + 'servers/webServer/start.sh').relative_path_from(@droplet.root)}",
         @droplet.environment_variables.add_environment_variable 'JAVA_OPTS', '$JAVA_OPTS'
         @droplet.java_opts.add_system_property 'http.port', '$PORT'
 
