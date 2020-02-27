@@ -464,8 +464,14 @@ download_template() {
             sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
             # change LENA SERVER HOME path from kubernetes path to paas-ta(cf) path
             sed -i "s/usr\/local\/lenaw/home\/vcap\/app\/.java-buildpack\/lenaw/g" ${LENA_SERVER_HOME}/env.sh
-            # paasta 서비스 포트 지정 (8080)
-            sed -i "s/7180/8080/g" ${LENA_SERVER_HOME}/env.sh
+            # paasta 서비스 포트 지정 (8080) - kube 기본 7180 에서 paas-ta service port 로 변경
+            if  [[ ! -z "${VCAP_APP_PORT}" ]] ; then
+                sed -i "s/7180/${VCAP_APP_PORT}/g" ${LENA_SERVER_HOME}/env.sh
+            else
+                sed -i "s/7180/8080/g" ${LENA_SERVER_HOME}/env.sh
+            fi
+            
+
         fi
         
     fi
