@@ -366,13 +366,19 @@ config_web_log() {
 create_web_agent_conf() {
 
 	echo "#Agent Configuration"					 >> ${LENA_HOME}/conf/agent.conf
-	echo "advertiser.server.port=16100"			 >> ${LENA_HOME}/conf/agent.conf
+	
 	echo "advertiser.enable=true"				 >> ${LENA_HOME}/conf/agent.conf
 	echo "status.check.interval=2000"			 >> ${LENA_HOME}/conf/agent.conf
 	echo "agent.server.worker=32"				 >> ${LENA_HOME}/conf/agent.conf
 	echo "advertiser.interval=2000" 			 >> ${LENA_HOME}/conf/agent.conf
 	echo "agent.server.port=16900"				 >> ${LENA_HOME}/conf/agent.conf
 	echo "agent.server.user=vcap"				 >> ${LENA_HOME}/conf/agent.conf
+
+    if [[ ! -z "${LENA_ADVERTISER_SERVER_PORT}" ]]; then
+        echo "advertiser.server.port=${LENA_ADVERTISER_SERVER_PORT}"			 >> ${LENA_HOME}/conf/agent.conf
+	else
+        echo "advertiser.server.port=16100"			 >> ${LENA_HOME}/conf/agent.conf
+    fi
 
     if [[ ! -z "${LENA_MANAGER_ADDRESS}" ]]; then
         INDEX=`expr index "${LENA_MANAGER_ADDRESS}" :`
