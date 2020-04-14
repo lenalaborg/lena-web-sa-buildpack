@@ -822,10 +822,5 @@ if [ "${LENA_SERVER_START_OPT}" = "background" ]; then
     do
         tail -f /dev/null & wait ${!}
     done
-else
-    log "------------------------------------------------------"
-    log "------------ LENA SERVER START FOREGROUND ------------"
-    log "------------------------------------------------------"
-	#stop_lena_agent
 fi
 
