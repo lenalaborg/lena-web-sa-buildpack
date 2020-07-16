@@ -22,7 +22,7 @@ jre:
   #version: 1.8.0_201
   #repository_root: "{default.repository.root}/openjdk/{platform}/{architecture}"
   version: 1.8.0
-  repository_root: https://s3.ap-northeast-2.amazonaws.com/download.lenalab.org/lena/cf/jdk
+  repository_root: "https://github.com/lenalaborg/lena-jdk-index/raw/master"
 jvmkill_agent:
   version: 1.+
   repository_root: "{default.repository.root}/jvmkill/{platform}/{architecture}"
