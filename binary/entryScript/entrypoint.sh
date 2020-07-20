@@ -20,6 +20,10 @@ if [ -z "${LENA_SERVICE_PORT}" ]; then
     LENA_SERVICE_PORT=8080
 fi
 
+############################################
+###### Paste From docker entry point. ######
+############################################
+
 #set LENA_USER_GROUP
 if [ -z "${LENA_USER_GROUP}" ]; then
     LENA_USER_GROUP=${LENA_USER}
@@ -82,7 +86,11 @@ start_lena_web_agent() {
     log "------------------------------------------------------"
     log "su ${LENA_USER} -c ${LENA_HOME}/bin/start-agent.sh"
     cd ${LENA_HOME}/bin/
-    su ${LENA_USER} -c "${LENA_HOME}/bin/start-agent.sh"
+    if [[ ${PAAS_TA_FLAG} = "N" ]]; then
+        su ${LENA_USER} -c "${LENA_HOME}/bin/start-agent.sh"
+    else
+        ${LENA_HOME}/bin/start-agent.sh
+    fi
     PS_RESULT=`${LENA_HOME}/bin/ps-agent.sh`
     PID=`echo ${PS_RESULT} | awk '{print $2}'`
     log "LENA Agent PID : ${PID}"
@@ -114,7 +122,11 @@ start_lena_server() {
 	esac
 
     log "  > su ${LENA_USER} -c ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}" 
-    su ${LENA_USER} -c ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}
+    if [[ ${PAAS_TA_FLAG} = "N" ]]; then
+        su ${LENA_USER} -c ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}
+    else
+        ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}
+    fi
     log " " 
 }
 
@@ -980,7 +992,11 @@ _start() {
 	    	download_license $*
 	    	config_service_port $*
 	    	# Reset JVM Route Value 
-	    	su ${LENA_USER} -c "${LENA_HOME}/etc/scale/reset-jvmRoute.sh" | tee -a ${LENA_ENTRY_LOG}
+	    	if [[ ${PAAS_TA_FLAG} = "N" ]]; then
+		        su ${LENA_USER} -c "${LENA_HOME}/etc/scale/reset-jvmRoute.sh" | tee -a ${LENA_ENTRY_LOG}
+		    else
+		        ${LENA_HOME}/etc/scale/reset-jvmRoute.sh | tee -a ${LENA_ENTRY_LOG}
+		    fi
 	    	if [[ "${LENA_AGENT_RUN}" = "Y" ]]; then
 				start_lena_agent $*
 				sleep 3
