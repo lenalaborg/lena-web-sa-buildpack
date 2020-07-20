@@ -1,17 +1,29 @@
 #!/bin/bash
 
 #docker-entrypoint for LENA
-LENA_HOME=/home/vcap/app/.java-buildpack/lenaw
 
+#PAAS-TA FLAG
+PAAS_TA_FLAG=Y
+
+LENA_HOME=/home/vcap/app/.java-buildpack/lenaw
 LENA_SERVER_TYPE=web
 LENA_USER=vcap
 LENA_SERVER_HOME=${LENA_HOME}/servers/webServer
 LENA_SERVER_START_OPT=foreground
 LENA_AGENT_PORT=16900
+JAVA_HOME=/home/vcap/app/.java-buildpack/open_jdk_jre
 
 LENA_ENTRY_LOG=${LENA_HOME}/logs/entrypoint.log
 
-JAVA_HOME=/home/vcap/app/.java-buildpack/open_jdk_jre
+#set LENA_USER_GROUP
+if [ -z "${LENA_SERVICE_PORT}" ]; then
+    LENA_SERVICE_PORT=8080
+fi
+
+#set LENA_USER_GROUP
+if [ -z "${LENA_USER_GROUP}" ]; then
+    LENA_USER_GROUP=${LENA_USER}
+fi
 
 # Start up lena agent
 start_lena_agent() {
@@ -70,8 +82,7 @@ start_lena_web_agent() {
     log "------------------------------------------------------"
     log "su ${LENA_USER} -c ${LENA_HOME}/bin/start-agent.sh"
     cd ${LENA_HOME}/bin/
-    #su ${LENA_USER} -c "${LENA_HOME}/bin/start-agent.sh"
-    ${LENA_HOME}/bin/start-agent.sh
+    su ${LENA_USER} -c "${LENA_HOME}/bin/start-agent.sh"
     PS_RESULT=`${LENA_HOME}/bin/ps-agent.sh`
     PID=`echo ${PS_RESULT} | awk '{print $2}'`
     log "LENA Agent PID : ${PID}"
@@ -80,18 +91,30 @@ start_lena_web_agent() {
 # Start lena server
 start_lena_server() {
     # Run lena server
-    echo " " 
-    log " Try for LENA server to start " 
+    log " " 
+    log "Try for LENA server to start " 
     cd ${LENA_SERVER_HOME}
     
     _START_OPTION="foreground"
     if [ "${LENA_SERVER_START_OPT}" = "background" ]; then
 		_START_OPTION=""
     fi
+    
+    case ${LENA_SERVER_TYPE} in
+	    manager)
+	        ;;
+	    session)
+	        log " delete Zodiac file (session) rm -rf ${LENA_SERVER_HOME}/*.zodiac" 
+	        rm -rf ${LENA_SERVER_HOME}/*.zodiac
+	        ;;
+	    *)
+	        log " delete PID file (web, was) rm -rf ${LENA_SERVER_HOME}/*.pid" 
+	    	rm -rf ${LENA_SERVER_HOME}/*.pid
+	        ;;
+	esac
 
-    log "${LENA_SERVER_HOME}/start.sh ${_START_OPTION}" 
-    #su ${LENA_USER} -c ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}
-    ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}
+    log "  > su ${LENA_USER} -c ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}" 
+    su ${LENA_USER} -c ${LENA_SERVER_HOME}/start.sh ${_START_OPTION}
     log " " 
 }
 
@@ -206,42 +229,98 @@ config_memSize() {
 	fi
 	
 	if [ ! -z ${ENV_FILE_PATH} ]; then
-		echo "Java heap meomory config is changed "
+		log "Java heap meomory config is changed "
 		cat ${ENV_FILE_PATH} | grep Xmx | grep -v "#CATALINA"
 	fi
 }
 
+# Change Server ID to hostname
+config_serverId() {
+	case ${LENA_SERVER_TYPE} in
+	    manager)
+	        ;;
+	    *)
+	        sed -i "s/export\sSERVER_ID=.*/export SERVER_ID=`hostname`/g" ${LENA_SERVER_HOME}/env.sh
+	        sed -i "s/<id>${LENA_SERVER_NAME}<\/id>/<id>`hostname`<\/id>/g" ${LENA_HOME}/etc/info/install-info.xml
+	        log "LENA Server ID is changed to `hostname`"
+	        log "  > `cat ${LENA_SERVER_HOME}/env.sh | grep 'export SERVER_ID='`"
+	        log "  > `cat ${LENA_HOME}/etc/info/install-info.xml | grep '<id>'`"
+	       ;;
+	esac
+}
+
 # Config Logroate of Linux
 config_logrotate() {
-    if [ -f /etc/redhat-release ]; then
-        log "CentOS crontab-logrotate configure"
-        # remove as-is cron daily config
-        sed -i "/cron.daily/d" /etc/cron.d/dailyjobs
-        # add new cron daily config
-        mkdir -p /etc/cron.lena
-        mv /etc/cron.daily/logrotate /etc/cron.lena/logrotate
-        echo "59 23 * * * root [ ! -f /etc/cron.hourly/0anacron ] && run-parts /etc/cron.lena" >> /etc/cron.d/dailyjobs
-        #run crontab
-        /usr/sbin/crond -n &
-        
-    else
-        log "Ubuntu crontab-logrotate configure"
-        #change logrotate user group from 'syslog' to 'root'
-        sed -i "s/su root syslog/su root root/g" /etc/logrotate.conf
-        # remove as-is cron daily config
-        sed -i "/cron.daily/d" /etc/crontab
-        # add new cron daily config
-        mkdir -p /etc/cron.lena
-        mv /etc/cron.daily/logrotate /etc/cron.lena/logrotate
-        echo "59 23     * * *   root    test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.lena )" >> /etc/crontab
-        #run crontab
-        /usr/sbin/cron &
-        
+    if [[ ${PAAS_TA_FLAG} = "N" ]]; then
+        echo "docker logrotate config"
+	    if [ -f /etc/redhat-release ]; then
+	        log "CentOS crontab-logrotate configure"
+	        # remove as-is cron daily config
+	        sed -i "/cron.daily/d" /etc/cron.d/dailyjobs
+	        # add new cron daily config
+	        mkdir -p /etc/cron.lena
+	        mv /etc/cron.daily/logrotate /etc/cron.lena/logrotate
+	        echo "0 0 * * * root [ ! -f /etc/cron.hourly/0anacron ] && run-parts /etc/cron.lena" >> /etc/cron.d/dailyjobs
+	        #run crontab
+	        /usr/sbin/crond -n &        
+	    else
+	        log "Ubuntu crontab-logrotate configure"
+	        #change logrotate user group from 'syslog' to 'root'
+	        sed -i "s/su root syslog/su root root/g" /etc/logrotate.conf
+	        # remove as-is cron daily config
+	        sed -i "/cron.daily/d" /etc/crontab
+	        # add new cron daily config
+	        mkdir -p /etc/cron.lena
+	        mv /etc/cron.daily/logrotate /etc/cron.lena/logrotate
+	        echo "0 0     * * *   root    test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.lena )" >> /etc/crontab
+	        #run crontab
+	        /usr/sbin/cron &        
+	    fi
     fi
 }
 
 
-# Config Log Output
+# Config Logroate of Linux
+run_logrotate() {
+    #logrotate force run and change log rotate execution date to yesterday - if it is today. first log rotate missing.
+    /usr/sbin/logrotate /etc/logrotate.d/lena
+    YYYY=`date '+%Y'`
+	MM=`date '+%m' | sed -e "s/0//g"`
+	DD=`date '+%d' | sed -e "s/0//g"`
+	YD=`expr $DD - 1`
+	TODAY=${YYYY}-${MM}-${DD}
+	YESTERDAY=${YYYY}-${MM}-${YD}
+    if [ -f /etc/redhat-release ]; then
+    	sed -i "s/${TODAY}/${YESTERDAY}/g" /var/lib/logrotate/logrotate.status
+    else
+		sed -i "s/${TODAY}/${YESTERDAY}/g" /var/lib/logrotate/status        
+    fi
+}
+
+config_service_port() {
+    log "call config_service_port() LENA_SERVICE_PORT : ${LENA_SERVICE_PORT}"
+	if [ ! -z "${LENA_SERVICE_PORT}" ]; then
+	    case ${LENA_SERVICE_PORT} in
+		    web)
+		        OLD_PORT=`cat ${LENA_SERVER_HOME}/env.sh  | grep 'export SERVICE_PORT'`
+				NEW_PORT=`cat ${LENA_SERVER_HOME}/env.sh  | grep 'export SERVICE_PORT' | awk -F= '{print $1}'`=${LENA_SERVICE_PORT}
+				log "[WEB]change service port from ${OLD_PORT} to ${NEW_PORT}"
+				sed -i "s/${OLD_PORT}/${NEW_PORT}/g" ${LENA_SERVER_HOME}/env.sh
+		        ;;
+		    manager)
+		        ;;
+		    session)
+		        ;;
+		    *)  
+		        OLD_PORT=`cat ${LENA_SERVER_HOME}/env.sh  | grep 'export SERVICE_PORT'`
+				NEW_PORT=`cat ${LENA_SERVER_HOME}/env.sh  | grep 'export SERVICE_PORT' | awk -F= '{print $1}'`=${LENA_SERVICE_PORT}
+				log "[WAS]change service port from ${OLD_PORT} to ${NEW_PORT}"
+				sed -i "s/${OLD_PORT}/${NEW_PORT}/g" ${LENA_SERVER_HOME}/env.sh
+		        ;;
+		esac
+	fi	
+}
+# Config Application Server Log Output
 config_was_log() {
     
     if [ "${LOG_OUTPUT_TYPE}" = "file" ]; then
@@ -254,7 +333,7 @@ config_was_log() {
     	# Access Log
     	sed -i "s/argo\.server\.valves\.StdoutAccessLogValve/org\.apache\.catalina\.valves\.AccessLogValve/g" ${LENA_SERVER_HOME}/conf/server.xml
     	sed -i "s/valves\.AccessLogValve\"/valves\.AccessLogValve\" rotatable\=\"false\"/g" ${LENA_SERVER_HOME}/conf/server.xml
-
+    	
     else 
     	log "LOG output type is console" 
     	sed -i "s/LOG_OUTPUT=.*/LOG_OUTPUT=console/g" ${LENA_SERVER_HOME}/bin/setenv.sh
@@ -265,7 +344,7 @@ config_was_log() {
     if [ ! -z "${LENA_LOG_OUTPUT_DIR}" ]; then
     	log "LOG output directory is ${LOG_OUTPUT_DIR}"
     	mkdir -p ${LOG_OUTPUT_DIR}
-    	chown ${LENA_USER}:${LENA_USER} ${LOG_OUTPUT_DIR} 
+    	chown ${LENA_USER}:${LENA_USER_GROUP} ${LOG_OUTPUT_DIR} 
     	LOG_OUTPUT_DIR_EXP=$(echo ${LOG_OUTPUT_DIR}$i | sed -e "s/\//\\\\\//g")
         sed -i "s/LOG_HOME=.*$/LOG_HOME=${LOG_OUTPUT_DIR_EXP}/g" ${LENA_SERVER_HOME}/env.sh
         sed -i "s/DUMP_HOME=.*$/DUMP_HOME=${LOG_OUTPUT_DIR_EXP}/g" ${LENA_SERVER_HOME}/env.sh
@@ -273,8 +352,31 @@ config_was_log() {
     fi
     
     #call logrotate config function
-    #config_logrotate
+    config_logrotate
     
+}
+
+# Config Session Log Output
+config_session_log() {
+    if [ "${LOG_OUTPUT_TYPE}" = "file" ]; then
+        log "LOG output type is file" 
+    	sed -i "s/LOG_OUTPUT=.*/LOG_OUTPUT=file/g" ${LENA_SERVER_HOME}/env.sh
+    	
+    	# change Server id in env.sh
+    	log "[session log]change Server id to hostname in env.sh"
+    	SVR_ID_LN=`cat ${LENA_SERVER_HOME}/env.sh | grep "export SERVER_ID"`
+        N_SVR_ID_LN='export SERVER_ID=${HOSTNAME}'
+        sed -i "s/${SVR_ID_LN}/${N_SVR_ID_LN}/g"  ${LENA_SERVER_HOME}/env.sh
+    	
+    	# trun off log rotate
+    	sed -i "/export JAVA_OPTS/i\JAVA_OPTS=\" \$\{JAVA\_OPTS\} -Dlog\.rotate=false\""  ${LENA_SERVER_HOME}/env.sh
+    else 
+    	log "LOG output type is console" 
+    	sed -i "s/LOG_OUTPUT=.*/LOG_OUTPUT=console/g" ${LENA_SERVER_HOME}/env.sh
+    fi
+    
+    #call logrotate config function
+    config_logrotate
 }
 
 # Config Dump Output
@@ -283,7 +385,11 @@ config_was_dump() {
     DUMP_HOME=${LENA_SERVER_HOME}/dumps/`hostname`
     log "Dump output directory is ${DUMP_HOME}"
     mkdir -p ${DUMP_HOME}
-    sed -i "s/DUMP_HOME=\${CATALINA_HOME}\/dumps/DUMP_HOME=\${CATALINA_HOME}\/dumps\/`hostname`/g" ${LENA_SERVER_HOME}/env.sh    	
+    chown -R ${LENA_USER}:${LENA_USER_GROUP} ${LENA_SERVER_HOME}/dumps
+    
+    OLD_DUMP_HOME=`cat ${LENA_SERVER_HOME}/env.sh | grep "export DUMP_HOME"`
+    NEW_DUMP_HOME="export DUMP_HOME=\${CATALINA_HOME}/dumps/`hostname`"
+    sed -i "s:${OLD_DUMP_HOME}:${NEW_DUMP_HOME}:g" ${LENA_SERVER_HOME}/env.sh
         
 }
 
@@ -310,14 +416,14 @@ config_web_log() {
         
         HTTPD_FILE=${LENA_SERVER_HOME}/conf/httpd.conf
         HTTPD_LINE_NO=`grep -n "ErrorLog /dev/stderr" ${HTTPD_FILE} | cut -d: -f1 | head -1`
-        if [ ! -z $HTTPD_LINE_NO ]; then
+        if [ -z !=  $HTTPD_LINE_NO ]; then
             sed -i "${HTTPD_LINE_NO}d" ${HTTPD_FILE}
             sed -i "${HTTPD_LINE_NO}i\ErrorLog \"\${LOG_HOME}\/error\.log\"" ${HTTPD_FILE}
         fi
         
         START_FILE=${LENA_SERVER_HOME}/start.sh
         START_LINE_NO=`grep -n "apachectl" ${START_FILE} | grep "DFOREGROUND" | cut -d: -f1 | head -1`
-        if [ ! -z $START_LINE_NO ]; then
+        if [ -z !=  $START_LINE_NO ]; then
             sed -i "/apachectl/d" ${START_FILE}
             sed -i "${START_LINE_NO}i\  \$\{ENGN_HOME\}\/bin\/apachectl \-f \$\{INSTALL_PATH\}\/conf\/httpd\.conf \-k start \-D\$\{MPM\_TYPE\} \$\{EXT\_MODULE\_DEFINES\}" ${START_FILE}
         fi    
@@ -341,7 +447,7 @@ config_web_log() {
         
         HTTPD_FILE=${LENA_SERVER_HOME}/conf/httpd.conf
         HTTPD_LINE_NO=`grep -n "ErrorLog" ${HTTPD_FILE} | grep rotatelogs | cut -d: -f1 | head -1`
-        if [ ! -z $HTTPD_LINE_NO ]; then
+        if [ -z !=  $HTTPD_LINE_NO ]; then
             sed -i "${HTTPD_LINE_NO}d" ${HTTPD_FILE}
             sed -i "${HTTPD_LINE_NO}i\ErrorLog \/dev\/stderr" ${HTTPD_FILE}
         fi
@@ -349,36 +455,27 @@ config_web_log() {
         
         START_FILE=${LENA_SERVER_HOME}/start.sh
         START_LINE_NO=`grep -n "apachectl" ${START_FILE} | cut -d: -f1 | head -1`
-        if [ ! -z $START_LINE_NO ]; then
+        if [ -z !=  $START_LINE_NO ]; then
             sed -i "/apachectl/d" ${START_FILE}
             sed -i "${START_LINE_NO}i\  \$\{ENGN_HOME\}\/bin\/apachectl \-f \$\{INSTALL_PATH\}\/conf\/httpd\.conf \-k start \-D\$\{MPM\_TYPE\} \$\{EXT\_MODULE\_DEFINES\} -DFOREGROUND 2\>\&1 \&" ${START_FILE}
         fi        
     fi
     
     #call logrotate config function
-    #config_logrotate
-    
-    
-    
+    config_logrotate
 }
 
 # Create web agent.conf
 create_web_agent_conf() {
 
-	echo "#Agent Configuration"					 >> ${LENA_HOME}/conf/agent.conf
-	
+	echo "#Agent Configuration"					 > ${LENA_HOME}/conf/agent.conf # Create agent conf file
+	echo "advertiser.server.port=16100"			 >> ${LENA_HOME}/conf/agent.conf
 	echo "advertiser.enable=true"				 >> ${LENA_HOME}/conf/agent.conf
 	echo "status.check.interval=2000"			 >> ${LENA_HOME}/conf/agent.conf
 	echo "agent.server.worker=32"				 >> ${LENA_HOME}/conf/agent.conf
 	echo "advertiser.interval=2000" 			 >> ${LENA_HOME}/conf/agent.conf
 	echo "agent.server.port=16900"				 >> ${LENA_HOME}/conf/agent.conf
-	echo "agent.server.user=vcap"				 >> ${LENA_HOME}/conf/agent.conf
-
-    if [[ ! -z "${LENA_ADVERTISER_SERVER_PORT}" ]]; then
-        echo "advertiser.server.port=${LENA_ADVERTISER_SERVER_PORT}"			 >> ${LENA_HOME}/conf/agent.conf
-	else
-        echo "advertiser.server.port=16100"			 >> ${LENA_HOME}/conf/agent.conf
-    fi
+	echo "agent.server.user=root"				 >> ${LENA_HOME}/conf/agent.conf
 
     if [[ ! -z "${LENA_MANAGER_ADDRESS}" ]]; then
         INDEX=`expr index "${LENA_MANAGER_ADDRESS}" :`
@@ -438,6 +535,7 @@ config_advertiser() {
     fi
 }
 
+#Download Configuration Template 
 download_template() {
 	_MAX_TIME=15
 	_CONNECT_TIMEOUT=5
@@ -447,33 +545,57 @@ download_template() {
 	if  [[ ! -z "${LENA_DOWNLOAD_CONNECT_TIMEOUT}" ]] ; then
 		_CONNECT_TIMEOUT=${LENA_DOWNLOAD_CONNECT_TIMEOUT}
 	fi
-
+	
     if [[ "${LENA_CONFIG_TEMPLATE_DOWNLOAD}" = "Y" ]] && [[ ! -z "${LENA_MANAGER_ADDRESS}" ]] && [[ ! -z "${LENA_CONFIG_TEMPLATE_ID}" ]] && [[ ! -z "${LENA_MANAGER_KEY}" ]]; then
-    	log "Download template from LENA Manager ${LENA_MANAGER_ADDRESS}, ContainerGroupName-Version : ${TEMPLATE_TAG}"
-    	log "curl -o ${LENA_SERVER_HOME}/template.zip --connect-timeout ${_CONNECT_TIMEOUT} --max-time ${_MAX_TIME} http://${LENA_MANAGER_ADDRESS}/lena/rest/template/download/container/${LENA_CONFIG_TEMPLATE_ID}?key=${LENA_MANAGER_KEY}"
+    	log "Try to download configuration template from LENA Manager ${LENA_MANAGER_ADDRESS}, Template-ID : ${LENA_CONFIG_TEMPLATE_ID}"
+    	log "  > curl -o ${LENA_SERVER_HOME}/template.zip --connect-timeout ${_CONNECT_TIMEOUT} --max-time ${_MAX_TIME} http://${LENA_MANAGER_ADDRESS}/lena/rest/template/download/container/${LENA_CONFIG_TEMPLATE_ID}?key=${LENA_MANAGER_KEY}"
     	curl -o ${LENA_SERVER_HOME}/template.zip --connect-timeout ${_CONNECT_TIMEOUT} --max-time ${_MAX_TIME} http://${LENA_MANAGER_ADDRESS}/lena/rest/template/download/container/${LENA_CONFIG_TEMPLATE_ID}?key=${LENA_MANAGER_KEY}
-    	unzip -o ${LENA_SERVER_HOME}/template.zip -d  ${LENA_SERVER_HOME}
-    	chmod +x ${LENA_SERVER_HOME}/*.sh 
-    	chmod +x ${LENA_SERVER_HOME}/bin/*.sh
-    	chown -R ${LENA_USER}:${LENA_USER} ${LENA_SERVER_HOME}
-
-        if [ "${LENA_SERVER_TYPE}" = "web" ]; then
-            # Set Group from nobody to nogroup for ubuntu   
-            echo "Set Group of httpd to 'nogroup'"
-            echo "sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf"
-            sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
-            # change LENA SERVER HOME path from kubernetes path to paas-ta(cf) path
-            sed -i "s/usr\/local\/lenaw/home\/vcap\/app\/.java-buildpack\/lenaw/g" ${LENA_SERVER_HOME}/env.sh
-            # paasta 서비스 포트 지정 (8080) - kube 기본 7180 에서 paas-ta service port 로 변경
-            if  [[ ! -z "${VCAP_APP_PORT}" ]] ; then
-                sed -i "s/7180/${VCAP_APP_PORT}/g" ${LENA_SERVER_HOME}/env.sh
-            else
-                sed -i "s/7180/8080/g" ${LENA_SERVER_HOME}/env.sh
-            fi
-            
-
-        fi
-        
+    	
+    	if [[ "$?" = "0" ]] && [[ -e "${LENA_SERVER_HOME}/template.zip" ]]; then
+    		_MIME_TYPE=`file --mime-type ${LENA_SERVER_HOME}/template.zip`
+    		if [[ "${_MIME_TYPE}" == *"application/zip"* ]]; then
+		    	unzip -o ${LENA_SERVER_HOME}/template.zip -d ${LENA_SERVER_HOME}
+		    	_UNZIP_RESULT=$?
+		    	if [[ "$_UNZIP_RESULT" = "0" ]]; then
+			    	chmod +x ${LENA_SERVER_HOME}/*.sh 
+			    	chmod +x ${LENA_SERVER_HOME}/bin/*.sh
+			    	chown -R ${LENA_USER}:${LENA_USER_GROUP} ${LENA_SERVER_HOME}
+			    	
+			    	if [[ "${LENA_SERVER_TYPE}" = "web" ]] && [[ ${PAAS_TA_FLAG} = "Y" ]]; then
+			            # Set Group from nobody to nogroup for ubuntu   
+			            echo "Set Group of httpd to 'nogroup'"
+			            echo "sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf"
+			            sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
+			            # change LENA SERVER HOME path from kubernetes path to paas-ta(cf) path
+			            sed -i "s/usr\/local\/lenaw/home\/vcap\/app\/.java-buildpack\/lenaw/g" ${LENA_SERVER_HOME}/env.sh
+			        fi
+			    	
+			    	# Replace each env.sh's value
+			    	# if [[ "${LENA_SERVER_TYPE}" = "web" ]] && [[ -e "${LENA_SERVER_HOME}/lena-template.env" ]] ; then
+			    	# 	TEMP_LINE=TEMP-CONVERSION-LINE
+					# 	while read line; do 
+					# 	   INDEX=`expr index "${line}" =`
+					# 	   ENV_KEY=`expr substr "${line}" 1 $INDEX`
+					# 	   sed -i "s/${ENV_KEY}/${TEMP_LINE}/g" ${LENA_SERVER_HOME}/env.sh
+					# 	   sed -i "/${TEMP_LINE}/i\export ${line}" ${LENA_SERVER_HOME}/env.sh
+					# 	   sed -i "/${TEMP_LINE}/d" ${LENA_SERVER_HOME}/env.sh
+					# 	done < ${LENA_SERVER_HOME}/lena-template.env
+					# fi
+					log "Success to download LENA configuration template file. Template-ID : ${LENA_CONFIG_TEMPLATE_ID}(Full revision : `cat ${LENA_SERVER_HOME}/lena-template.ver`)"
+				else 
+					log "Fail to unzip ${LENA_SERVER_HOME}/template.zip file"
+				fi
+			else
+				log "Fail to download LENA configuration template file" 
+				log "  > The mime type of ${_MIME_TYPE}" 
+				if [[ "${_MIME_TYPE}" == *"text/html"* ]]; then
+					log "  > Error Message is `cat ${LENA_SERVER_HOME}/template.zip | grep '<title>'` "
+					log "  > Check the downloaded file."
+				fi
+			fi
+    	else
+    		log "Fail to download LENA configuration template file"
+    	fi
     fi
 }
 
@@ -490,37 +612,47 @@ download_license() {
 	
     if [[ ! -z "${LENA_LICENSE_DOWNLOAD_URL}" ]] ; then
       IFS=',' read -r -a downloadUrlArray <<< "${LENA_LICENSE_DOWNLOAD_URL}"
+      
       for downloadUrl in ${downloadUrlArray[@]}; do
-        echo "Try to download license from ${downloadUrl}"
+        log "Try to download license from ${downloadUrl}"
+        
           if [[ "${downloadUrl}" = "manager" ]]; then
             if [[ ! -z "${LENA_MANAGER_KEY}" ]] && [[ ! -z "${LENA_MANAGER_ADDRESS}" ]] && [[ ! -z "${LENA_CONTRACT_CODE}" ]]; then
-              echo "curl --connect-timeout ${_CONNECT_TIMEOUT} --max-time ${_MAX_TIME} -o ${LENA_HOME}/license/license_download.xml  -d "key=${LENA_MANAGER_KEY}"  --data-urlencode "contractCode=${LENA_CONTRACT_CODE}" http://${LENA_MANAGER_ADDRESS}/lena/rest/container/license"
+              log "  > curl --connect-timeout ${_CONNECT_TIMEOUT} --max-time ${_MAX_TIME} -o ${LENA_HOME}/license/license_download.xml  -d "key=${LENA_MANAGER_KEY}"  --data-urlencode "contractCode=${LENA_CONTRACT_CODE}" http://${LENA_MANAGER_ADDRESS}/lena/rest/container/license"
               curl --connect-timeout ${_CONNECT_TIMEOUT} --max-time ${_MAX_TIME} -o ${LENA_HOME}/license/license_download.xml  -d "key=${LENA_MANAGER_KEY}"  --data-urlencode "contractCode=${LENA_CONTRACT_CODE}" http://${LENA_MANAGER_ADDRESS}/lena/rest/container/license
               xmllint --noout --format ${LENA_HOME}/license/license_download.xml 2>/dev/null
-
+              
               if [[ $? == 0 ]]; then
-                echo "license XML is valid. (Just XML Validation)"
+                log "  > License file format is valid. (Just XML Validation)"
                 mv -f ${LENA_HOME}/license/license_download.xml ${LENA_HOME}/license/license.xml
-                cat ${LENA_HOME}/license/license.xml
+                # cat ${LENA_HOME}/license/license.xml
                 break;
               else
-                echo "Fail to download license from ${downloadUrl}"
+              	_MIME_TYPE=`file --mime-type ${LENA_HOME}/license/license_download.xml`
+                log "  > Fail to download license from ${downloadUrl}"
+                log "  > The mime type of ${_MIME_TYPE}" 
+                if [[ "${_MIME_TYPE}" == *"text/html"* ]]; then
+					log "  > Error Message is `cat ${LENA_HOME}/license/license_download.xml | grep '<title>'` "
+					log "  > Check the downloaded file."
+				fi
               fi
             else
-              echo "Not enough parameter for download from manager. Manager Addrss (-r) : ${MANAGER_ADDR}, -key : ${ACCESS_KEY}, Contract Code : ${LENA_CONTRACT_CODE} "
+              log "  > Not enough parameter for download from manager. Manager Addrss (-r) : ${LENA_MANAGER_ADDRESS}, -key : ${LENA_MANAGER_KEY}, Contract Code : ${LENA_CONTRACT_CODE} "
             fi
           else
-          	echo "curl --connect-timeout ${_CONNECT_TIMEOUT} --max-time ${_MAX_TIME} -o ${LENA_HOME}/license/license_download.xml  -d "key=${LENA_MANAGER_KEY}"  --data-urlencode "contractCode=${LENA_CONTRACT_CODE}" http://${LENA_MANAGER_ADDRESS}/lena/rest/container/license"
+          	log "  > curl --connect-timeout ${_CONNECT_TIMEOUT} --max-time ${_MAX_TIME} -o ${LENA_HOME}/license/license_download.xml ${downloadUrl}"
             curl --connect-timeout ${_CONNECT_TIMEOUT} --max-time ${_MAX_TIME}  -o ${LENA_HOME}/license/license_download.xml ${downloadUrl}
             xmllint --noout --format ${LENA_HOME}/license/license_download.xml 2>/dev/null
 
             if [[ $? == 0 ]]; then
-              echo "license XML is valid. (Just XML Validation)"
+              log "  > License file format is valid. (Just XML Validation)"
               mv -f ${LENA_HOME}/license/license_download.xml ${LENA_HOME}/license/license.xml
-              cat ${LENA_HOME}/license/license.xml
+              # cat ${LENA_HOME}/license/license.xml
               break;
             else
-              echo "Fail to download license from ${downloadUrl}"
+              _MIME_TYPE=`file --mime-type ${LENA_HOME}/license/license_download.xml`
+              log "  > Fail to download license from ${downloadUrl}"
+              log "  > The mime type of ${_MIME_TYPE}"
             fi
           fi
       done
@@ -533,7 +665,7 @@ config_java_domain_cache_ttl() {
 	if [[ ! -z "${_DNS_TTL}" ]]; then
 		_JAVA_SECU_FILE="${JAVA_HOME}/jre/lib/security/java.security"
 		echo "networkaddress.cache.ttl=${_DNS_TTL}" >> ${_JAVA_SECU_FILE}
-		echo "Change Java domain cache ttl to ${_DNS_TTL} in file '${_JAVA_SECU_FILE}' "
+		log "Change Java domain cache ttl to ${_DNS_TTL} in file '${_JAVA_SECU_FILE}' "
 		cat ${_JAVA_SECU_FILE} | grep networkaddress.cache.ttl
 	fi
 }
@@ -584,6 +716,9 @@ config_session_cluster() {
     SECONDARY_ADDRESS=""
     ADDRESS_KEY=""
     SELF_IP="$(hostname -I | awk ' {print $1} ')"
+    if [[ "$?" != "0" ]] ; then
+    	SELF_IP="$(hostname -i | awk ' {print $1} ')"
+    fi
     
     if [[ -z "${LENA_SESSION_0_ADDRESS}" ]] || [[ -z "${LENA_SESSION_1_ADDRESS}" ]] ; then
     	 echo "Fail to start session server. Session server address is empty. Set environment 'LENA_SESSION_0_ADDRESS' AND 'LENA_SESSION_1_ADDRESS' with format \"Domain Address:Port\" "
@@ -626,7 +761,7 @@ config_session_cluster() {
     if [[ ! -z "${ADDRESS_KEY}" ]]; then
     	CHECK_RESULT=$(check_address_format ${SECONDARY_ADDRESS})
     	if [[ "${CHECK_RESULT}" != "valid" ]]; then
-    		echo "Fail to start session server. Session server address '${SECONDARY_ADDRESS}' is invalid. Set environment '${ADDRESS_KEY}' with format \"Domain Address:Port\" "
+    		log "Fail to start session server. Session server address '${SECONDARY_ADDRESS}' is invalid. Set environment '${ADDRESS_KEY}' with format \"Domain Address:Port\" "
 			exit 1
 		else
 	    	log "Session server config : secondary session address = ${SECONDARY_ADDRESS}"
@@ -635,7 +770,7 @@ config_session_cluster() {
 	    	sed -i "s/secondary\.port=.*/secondary\.port=${secondayAddr[1]}/g" ${LENA_SERVER_HOME}/session.conf 
     	fi
     else
-    	echo "Fail to start session server. Session server address is not set. Set environment '${ADDRESS_KEY}' with format 'Domain Address:Port' "
+    	log "Fail to start session server. Session server address is not set. Set environment '${ADDRESS_KEY}' with format 'Domain Address:Port' "
         exit 1
     fi
     
@@ -675,6 +810,19 @@ config_session_cluster() {
             echo "container.group.name=${TMP_CG_NAME:0:$IDX-1}" >>  ${LENA_SERVER_HOME}/session.conf
         fi
     fi
+    
+    #insert Share session in applications option
+    log "Session server config : Share session in applications = ${LENA_CONFIG_SHARE_SESSION} Default=false"       
+    sed -i "/share.session/d" ${LENA_SERVER_HOME}/session.conf        
+        
+    SHARE_SESSION_FLAG="false"
+    if [[ ! -z "$LENA_CONFIG_SHARE_SESSION" ]] ; then
+        if [[ "${LENA_CONFIG_SHARE_SESSION}" = "Y" ]] || [[ "${LENA_CONFIG_SHARE_SESSION}" = "y" ]]; then
+            SHARE_SESSION_FLAG="true"    
+        fi
+    fi        
+    echo "share.session=${SHARE_SESSION_FLAG}" >>  ${LENA_SERVER_HOME}/session.conf
+    
 }
 
 #SettingUp Manager Info
@@ -726,62 +874,123 @@ config_manager() {
     fi
    
 }
+    
+#SettingUp Manager Info
+check_init_config_flag() {
+
+    log "Check init Config Start"
+    INIT_CONFIG_FLAG="N"
+    
+    FIRST_RUN_FLAG=`cat ${LENA_HOME}/etc/info/init-config.info | grep FIRST_RUN_FLAG | awk -F= '{print $2}'`
+    if [[ "$FIRST_RUN_FLAG" = "Y" ]] ; then
+        INIT_CONFIG_FLAG="Y"
+        sed -i "/FIRST_RUN_FLAG/d" ${LENA_HOME}/etc/info/init-config.info
+    elif [[ "$INIT_CONFIG" = "Y" ]] ; then
+        INIT_CONFIG_FLAG="Y"
+    else 
+        INIT_CONFIG_INFO=`cat ${LENA_HOME}/etc/info/init-config.info | grep INIT_CONFIG_FLAG | awk -F= '{print $2}'`
+		if [[ "$INIT_CONFIG_INFO" = "Y" ]] ; then
+		    INIT_CONFIG_FLAG="Y"
+		fi
+    fi
+    
+    log "init Config flag : ${INIT_CONFIG_FLAG}"
+}
 
 #Start by Server Type
 _start() {
 	#Run SSH daemon if selected 
-	#@{image.ssh.runCommand}	
+	if [[ ${PAAS_TA_FLAG} = "N" ]]; then
+        # ##### DOCKER #####
+	    @{image.ssh.runCommand}
+	fi
+	
+	#check init config flag
+	check_init_config_flag  $* 	
 	
 	#Config memory size
-	 config_memSize $*
+	if [[ "${INIT_CONFIG_FLAG}" = "Y" ]]; then
+	    config_memSize $*
+	    #Change Owner of LENA HOME 
+		log "Change Owner of LENA HOME  -  chown ${LENA_USER}:${LENA_USER_GROUP} ${LENA_HOME}"
+		chown -R ${LENA_USER}:${LENA_USER_GROUP} ${LENA_HOME}	
+	fi
 	 
 	#Start Server & Agent
 	case ${LENA_SERVER_TYPE} in
 	    manager)
-	        config_manager $*
+	        if [[ "${INIT_CONFIG_FLAG}" = "Y" ]]; then
+	            config_manager $*
+	        fi	        
 	   		start_lena_manager $*
 	        ;;
-        web)
-	        download_template $*	        
-	        config_web_log $*	        
+	    web)
+	        if [[ "${INIT_CONFIG_FLAG}" = "Y" ]]; then
+	            config_web_log $*
+	        fi	        
+	        download_template $*
+	        download_license $*
+	        config_service_port $*
 			if [[ "${LENA_AGENT_RUN}" = "Y" ]]; then
 			    create_web_agent_conf $*
 				start_lena_web_agent $*
 				sleep 3
 			fi
 			start_lena_server $*
+			
+			if [[ "${INIT_CONFIG_FLAG}" = "Y" ]]; then
+			    sleep 3
+	            run_logrotate $*
+	        fi
 	        ;;
 	    session)
-	    	config_session_cluster $*
-	    	config_java_domain_cache_ttl 0
+	        if [[ "${INIT_CONFIG_FLAG}" = "Y" ]]; then
+	            config_session_cluster $*
+	    	    config_java_domain_cache_ttl 0
+                config_session_log $*
+	        fi	    	
 			if [[ "${LENA_AGENT_RUN}" = "Y" ]]; then
 				start_lena_agent $*
 			fi
 			#Take sleep time for session bulk sync.
 			sleep 3
 			start_lena_server $*
+			
+			if [[ "${INIT_CONFIG_FLAG}" = "Y" ]]; then
+			    sleep 3
+	            run_logrotate $*
+	        fi
 	        ;;
 	    *)
 	    	# WAS (standard, exclusive, enterprise) cases.
+	    	# download_template $*
+	    	# download_license $*
+	    	if [[ "${INIT_CONFIG_FLAG}" = "Y" ]]; then
+	            config_advertiser $*
+	    	    config_was_log $*
+	    	    append_jvmOption $*
+	    	    if [[ -n "${JAVA_DOMAIN_CACHE_TTL}" ]] ; then
+	    			config_java_domain_cache_ttl ${JAVA_DOMAIN_CACHE_TTL}
+		    	else 
+		    		config_java_domain_cache_ttl 10
+		    	fi
+	        fi	    	
+	        config_was_dump $*
 	    	download_template $*
 	    	download_license $*
-	    	config_advertiser $*
-	    	config_was_log $*
-	    	config_was_dump $*
-	    	# append_jvmOption $*
-	    	if [[ -n "${JAVA_DOMAIN_CACHE_TTL}" ]] ; then
-	    		config_java_domain_cache_ttl ${JAVA_DOMAIN_CACHE_TTL}
-	    	else 
-	    		config_java_domain_cache_ttl 10
-	    	fi
+	    	config_service_port $*
 	    	# Reset JVM Route Value 
-    		# su ${LENA_USER} -c "${LENA_HOME}/etc/scale/reset-jvmRoute.sh" | tee -a ${LENA_ENTRY_LOG}
-            ${LENA_HOME}/etc/scale/reset-jvmRoute.sh | tee -a ${LENA_ENTRY_LOG}
-			if [[ "${LENA_AGENT_RUN}" = "Y" ]]; then
+	    	su ${LENA_USER} -c "${LENA_HOME}/etc/scale/reset-jvmRoute.sh" | tee -a ${LENA_ENTRY_LOG}
+	    	if [[ "${LENA_AGENT_RUN}" = "Y" ]]; then
 				start_lena_agent $*
 				sleep 3
 			fi
 			start_lena_server $*
+			
+			if [[ "${INIT_CONFIG_FLAG}" = "Y" ]]; then
+			    sleep 3
+	            run_logrotate $*
+	        fi
 	        ;;
 	esac
 }
@@ -797,15 +1006,26 @@ _stop() {
 	fi
 }
 
+# Log to Standard out & file
 log() {
-    echo "[`date +\"%Y-%m-%d %X\"`] $1" | tee -a ${LENA_ENTRY_LOG}
+    echo "[`date +\"%Y-%m-%dT%T\"`] $1" | tee -a ${LENA_ENTRY_LOG}
 }
+
+
 
 log "## docker-entrypoint.sh called"
 log "## All entrypoint parameters : $*"
 
-#Start server
-_start $*
+# Start server
+if [[ "$1" = "download_template" ]]; then 
+	download_template $*
+	exit $?
+elif [[ "$1" = "download_license" ]]; then
+	download_license $*
+	exit $?
+else 
+	_start $*
+fi
 
 if [ "${LENA_SERVER_START_OPT}" = "background" ]; then
     log "------------------------------------------------------"
@@ -822,5 +1042,6 @@ if [ "${LENA_SERVER_START_OPT}" = "background" ]; then
     do
         tail -f /dev/null & wait ${!}
     done
+else
+	stop_lena_agent
 fi
-
