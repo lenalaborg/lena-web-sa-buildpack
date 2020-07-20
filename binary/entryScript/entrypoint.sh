@@ -24,6 +24,7 @@ fi
 ###### Paste From docker entry point. ######
 ############################################
 
+
 #set LENA_USER_GROUP
 if [ -z "${LENA_USER_GROUP}" ]; then
     LENA_USER_GROUP=${LENA_USER}
@@ -84,11 +85,13 @@ start_lena_web_agent() {
     log "------------------------------------------------------"
     log "---------- LENA WEB Server Node Agent Start ----------"
     log "------------------------------------------------------"
-    log "su ${LENA_USER} -c ${LENA_HOME}/bin/start-agent.sh"
+    
     cd ${LENA_HOME}/bin/
     if [[ ${PAAS_TA_FLAG} = "N" ]]; then
+        log "su ${LENA_USER} -c ${LENA_HOME}/bin/start-agent.sh"
         su ${LENA_USER} -c "${LENA_HOME}/bin/start-agent.sh"
     else
+        log "${LENA_HOME}/bin/start-agent.sh"
         ${LENA_HOME}/bin/start-agent.sh
     fi
     PS_RESULT=`${LENA_HOME}/bin/ps-agent.sh`
@@ -480,6 +483,7 @@ config_web_log() {
 # Create web agent.conf
 create_web_agent_conf() {
 
+	log "Create web agent conf"
 	echo "#Agent Configuration"					 > ${LENA_HOME}/conf/agent.conf # Create agent conf file
 	echo "advertiser.server.port=16100"			 >> ${LENA_HOME}/conf/agent.conf
 	echo "advertiser.enable=true"				 >> ${LENA_HOME}/conf/agent.conf
