@@ -483,7 +483,7 @@ config_web_log() {
 # Create web agent.conf
 create_web_agent_conf() {
 
-	log "Create web agent conf"
+	log "Create web agent conf [ ${LENA_HOME}/conf/agent.conf ]"
 	echo "#Agent Configuration"					 > ${LENA_HOME}/conf/agent.conf # Create agent conf file
 	echo "advertiser.server.port=16100"			 >> ${LENA_HOME}/conf/agent.conf
 	echo "advertiser.enable=true"				 >> ${LENA_HOME}/conf/agent.conf
