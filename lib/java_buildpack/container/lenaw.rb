@@ -148,7 +148,7 @@ module JavaBuildpack
 
       def run_sh(shPath)
         print "#{'----->'.green.bold} run shell #{shPath}  \n"
-        shell "sh #{shPath}"       
+        shell "sh -x #{shPath}"       
       end
       
       def chmod(shPath, authVar)
