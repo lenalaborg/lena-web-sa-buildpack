@@ -16,22 +16,22 @@ LENA_SERVER_NAME=webServer
 LENA_SERVER_HOME=/tmp/app/.java-buildpack/lenaw/servers/webServer
 LENA_USER=vcap
 
-echo "========= install utils start ============"
-apt-get update
-apt-get install -y locales logrotate
-apt-get -y autoclean && apt-get -y clean 
-echo "========= install utils done ============"
+# echo "========= install utils start ============"
+# sudo apt-get update
+# sudo apt-get install -y locales logrotate
+# sudo apt-get -y autoclean && apt-get -y clean 
+# echo "========= install utils done ============"
 
 
-echo "SET LOCALE ko_KR.utf8"
-if   [[ "${OS_FAMILY}" =~ "ubuntu" ]]; then
-    locale-gen ko_KR.UTF-8
-elif [[ "${OS_FAMILY}" =~ "debian" ]]; then
-	sed -i "s/#\sko_KR\.UTF-8/ko_KR\.UTF-8/g" /etc/locale.gen
-	locale-gen ko_KR.UTF-8
-else
-	localedef -v -c -i ko_KR -f UTF-8 ko_KR.UTF-8    
-fi
+# echo "SET LOCALE ko_KR.utf8"
+# if   [[ "${OS_FAMILY}" =~ "ubuntu" ]]; then
+#     locale-gen ko_KR.UTF-8
+# elif [[ "${OS_FAMILY}" =~ "debian" ]]; then
+# 	sed -i "s/#\sko_KR\.UTF-8/ko_KR\.UTF-8/g" /etc/locale.gen
+# 	locale-gen ko_KR.UTF-8
+# else
+# 	localedef -v -c -i ko_KR -f UTF-8 ko_KR.UTF-8    
+# fi
 
 
 case ${LENA_SERVER_TYPE} in
