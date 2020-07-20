@@ -483,7 +483,7 @@ config_web_log() {
 # Create web agent.conf
 create_web_agent_conf() {
 
-	log "Create web agent conf [ ${LENA_HOME}/conf/agent.conf ]"
+	log "Create web agent conf"
 	echo "#Agent Configuration"					 > ${LENA_HOME}/conf/agent.conf # Create agent conf file
 	echo "advertiser.server.port=16100"			 >> ${LENA_HOME}/conf/agent.conf
 	echo "advertiser.enable=true"				 >> ${LENA_HOME}/conf/agent.conf
@@ -931,9 +931,6 @@ _start() {
 		log "Change Owner of LENA HOME  -  chown ${LENA_USER}:${LENA_USER_GROUP} ${LENA_HOME}"
 		chown -R ${LENA_USER}:${LENA_USER_GROUP} ${LENA_HOME}	
 	fi
-
-    CUR_USER=`whoami`
-    log "CURRENT USER !! : ${CUR_USER}"
 	 
 	#Start Server & Agent
 	case ${LENA_SERVER_TYPE} in
@@ -1066,5 +1063,8 @@ if [ "${LENA_SERVER_START_OPT}" = "background" ]; then
         tail -f /dev/null & wait ${!}
     done
 else
-	stop_lena_agent
+	if [[ ${PAAS_TA_FLAG} = "N" ]]; then
+    # ##### DOCKER #####
+	    stop_lena_agent
+	fi
 fi
