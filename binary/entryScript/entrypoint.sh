@@ -297,18 +297,20 @@ config_logrotate() {
 
 # Config Logroate of Linux
 run_logrotate() {
-    #logrotate force run and change log rotate execution date to yesterday - if it is today. first log rotate missing.
-    /usr/sbin/logrotate /etc/logrotate.d/lena
-    YYYY=`date '+%Y'`
-	MM=`date '+%m' | sed -e "s/0//g"`
-	DD=`date '+%d' | sed -e "s/0//g"`
-	YD=`expr $DD - 1`
-	TODAY=${YYYY}-${MM}-${DD}
-	YESTERDAY=${YYYY}-${MM}-${YD}
-    if [ -f /etc/redhat-release ]; then
-    	sed -i "s/${TODAY}/${YESTERDAY}/g" /var/lib/logrotate/logrotate.status
-    else
-		sed -i "s/${TODAY}/${YESTERDAY}/g" /var/lib/logrotate/status        
+    if [[ ${PAAS_TA_FLAG} = "N" ]]; then
+	    #logrotate force run and change log rotate execution date to yesterday - if it is today. first log rotate missing.
+	    /usr/sbin/logrotate /etc/logrotate.d/lena
+	    YYYY=`date '+%Y'`
+		MM=`date '+%m' | sed -e "s/0//g"`
+		DD=`date '+%d' | sed -e "s/0//g"`
+		YD=`expr $DD - 1`
+		TODAY=${YYYY}-${MM}-${DD}
+		YESTERDAY=${YYYY}-${MM}-${YD}
+	    if [ -f /etc/redhat-release ]; then
+	    	sed -i "s/${TODAY}/${YESTERDAY}/g" /var/lib/logrotate/logrotate.status
+	    else
+			sed -i "s/${TODAY}/${YESTERDAY}/g" /var/lib/logrotate/status        
+	    fi
     fi
 }
 
