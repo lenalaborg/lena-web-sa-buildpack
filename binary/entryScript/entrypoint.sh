@@ -491,7 +491,7 @@ create_web_agent_conf() {
 	echo "agent.server.worker=32"				 >> ${LENA_HOME}/conf/agent.conf
 	echo "advertiser.interval=2000" 			 >> ${LENA_HOME}/conf/agent.conf
 	echo "agent.server.port=16900"				 >> ${LENA_HOME}/conf/agent.conf
-	echo "agent.server.user=root"				 >> ${LENA_HOME}/conf/agent.conf
+	echo "agent.server.user=${LENA_USER}"		 >> ${LENA_HOME}/conf/agent.conf
 
     if [[ ! -z "${LENA_MANAGER_ADDRESS}" ]]; then
         INDEX=`expr index "${LENA_MANAGER_ADDRESS}" :`
