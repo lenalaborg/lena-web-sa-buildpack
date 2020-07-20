@@ -47,51 +47,33 @@ case ${LENA_SERVER_TYPE} in
         fi
         
         if [[ "${OS_FAMILY}" =~ "ubuntu" ]] || [[ "${OS_FAMILY}" =~ "debian" ]]; then
-            # Copy ubuntu web library
-        	echo "rm -f ${LENA_HOME}/modules/lena-web-pe/lib/*"
-	        rm -f ${LENA_HOME}/modules/lena-web-pe/lib/*
+        	
         	if [[ ${PAAS_TA_FLAG} = "N" ]]; then
         		# ##### DOCKER ##### 
+	            echo "rm -f ${LENA_HOME}/modules/lena-web-pe/lib/*"
+	            rm -f ${LENA_HOME}/modules/lena-web-pe/lib/*
 	            for ubuntu_lib in "${UBUNTU_LIBS[@]}"; do
 	            	echo "curl -o ${LENA_HOME}/modules/lena-web-pe/lib/${ubuntu_lib} ${LIB_DOWNLOAD_URL}/web/ubuntu/${ubuntu_lib}"
 	            	curl -o ${LENA_HOME}/modules/lena-web-pe/lib/${ubuntu_lib} ${LIB_DOWNLOAD_URL}/web/ubuntu/${ubuntu_lib}
 	            done;
-            else
-                # ##### PAAS-TA ##### 
-                echo "${LENA_HOME}/depot/lena-web-lib/ubuntu/* ${LENA_HOME}/modules/lena-web-pe/lib"
-                cp -f ${LENA_HOME}/depot/lena-web-lib/ubuntu/* ${LENA_HOME}/modules/lena-web-pe/lib
             fi
-            
-            # add user group
+           
 	        echo "add User Group nobody"
 	        groupadd nobody
         fi
-       
-       
         echo "Replace vhost_default.conf to use mod_proxy"
-        if [[ ${PAAS_TA_FLAG} = "N" ]]; then
-        	# ##### DOCKER ##### 
-	        echo "curl -o ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf ${LIB_DOWNLOAD_URL}/web/vhost_default.conf_stdout"
-            curl -o ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf ${LIB_DOWNLOAD_URL}/web/vhost_default.conf_stdout
-        else
-            # ##### PAAS-TA ##### 
-            cp -f ${LENA_HOME}/depot/lena-web-lib/vhost_default.conf_stdout ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf
-            sed -i "/<Directory/i\     Include \"\${INSTALL\_PATH}\/conf\/extra\/proxy\/proxy\_vhost\_default\.conf\"" ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf
-        fi
+        echo "curl -o ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf ${LIB_DOWNLOAD_URL}/web/vhost_default.conf_stdout"
+        curl -o ${LENA_SERVER_HOME}/conf/extra/vhost/vhost_default.conf ${LIB_DOWNLOAD_URL}/web/vhost_default.conf_stdout
+        #echo "curl -o ${LENA_SERVER_HOME}/conf/extra/proxy/proxy_vhost_default.conf ${LIB_DOWNLOAD_URL}/web/proxy_vhost_default.conf"
+        #curl -o ${LENA_SERVER_HOME}/conf/extra/proxy/proxy_vhost_default.conf ${LIB_DOWNLOAD_URL}/web/proxy_vhost_default.conf
         
         echo "Change Log to StdOut/StdErr in httpd.conf"
         sed -i "s/^ErrorLog\s.*/ErrorLog \/dev\/stderr/g" ${LENA_SERVER_HOME}/conf/httpd.conf
         cat ${LENA_SERVER_HOME}/conf/httpd.conf | grep ErrorLog
         
 		echo "Replace start.sh to Standard-out Logging"
-		if [[ ${PAAS_TA_FLAG} = "N" ]]; then
-        	# ##### DOCKER ##### 
-	        echo "curl -o ${LENA_SERVER_HOME}/start.sh ${LIB_DOWNLOAD_URL}/web/start.sh_stdout"
-            curl -o ${LENA_SERVER_HOME}/start.sh ${LIB_DOWNLOAD_URL}/web/start.sh_stdout
-        else
-            # ##### PAAS-TA ##### 
-            cp -f ${LENA_HOME}/depot/lena-web-lib/start.sh_stdout ${LENA_SERVER_HOME}/start.sh
-        fi        
+        echo "curl -o ${LENA_SERVER_HOME}/start.sh ${LIB_DOWNLOAD_URL}/web/start.sh_stdout"
+        curl -o ${LENA_SERVER_HOME}/start.sh ${LIB_DOWNLOAD_URL}/web/start.sh_stdout
         
         #LOG ROTATE setup
         echo "Create LENA logrotate configure path = /etc/logrotate.d/lena"
