@@ -931,6 +931,9 @@ _start() {
 		log "Change Owner of LENA HOME  -  chown ${LENA_USER}:${LENA_USER_GROUP} ${LENA_HOME}"
 		chown -R ${LENA_USER}:${LENA_USER_GROUP} ${LENA_HOME}	
 	fi
+
+    CUR_USER=`whoami`
+    log "CURRENT USER !! : ${CUR_USER}"
 	 
 	#Start Server & Agent
 	case ${LENA_SERVER_TYPE} in
