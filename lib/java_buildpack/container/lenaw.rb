@@ -148,7 +148,7 @@ module JavaBuildpack
 
       def run_sh(shPath)
         print "#{'----->'.green.bold} run shell #{shPath}  \n"
-        shell "sh -x #{shPath}"       
+        shell "sh -x #{shPath}  2> rubylog.txt"       
       end
       
       def chmod(shPath, authVar)
