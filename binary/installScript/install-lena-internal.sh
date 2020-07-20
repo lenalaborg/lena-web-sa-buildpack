@@ -16,7 +16,9 @@ LENA_SERVER_NAME=webServer
 LENA_SERVER_HOME=/tmp/app/.java-buildpack/lenaw/servers/webServer
 LENA_USER=vcap
 
-
+############################################
+###### Paste From docker entry point. ######
+############################################
 
 if [[ ${PAAS_TA_FLAG} = "N" ]]; then
 	mkdir -p ${LENA_HOME}
