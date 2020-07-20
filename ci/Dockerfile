@@ -11,12 +11,17 @@ RUN apt-get update && apt-get install -y \
     python \
     zip \
     zlib1g-dev \
+    logrotate \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-RUN locale-gen en_US.UTF-8 \
- && /usr/sbin/update-locale LANG=en_US.UTF-8 \
- && dpkg-reconfigure -f noninteractive locales
+#RUN locale-gen en_US.UTF-8 \
+# && /usr/sbin/update-locale LANG=en_US.UTF-8 \
+# && dpkg-reconfigure -f noninteractive locales
+
+RUN locale-gen ko_KR.UTF-8 \
+ && /usr/sbin/update-locale LANG=ko_KR.UTF-8 \
+ && dpkg-reconfigure -f noninteractive locales 
 
 RUN git clone https://github.com/rbenv/rbenv.git $HOME/.rbenv \
  && cd $HOME/.rbenv \
