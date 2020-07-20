@@ -16,23 +16,28 @@ LENA_SERVER_NAME=webServer
 LENA_SERVER_HOME=/tmp/app/.java-buildpack/lenaw/servers/webServer
 LENA_USER=vcap
 
-echo "========= install utils start ============"
-sudo apt-get update
-sudo apt-get install -y locales logrotate
-sudo apt-get -y autoclean && apt-get -y clean 
-echo "========= install utils done ============"
 
 
-# echo "SET LOCALE ko_KR.utf8"
-# if   [[ "${OS_FAMILY}" =~ "ubuntu" ]]; then
-#     locale-gen ko_KR.UTF-8
-# elif [[ "${OS_FAMILY}" =~ "debian" ]]; then
-# 	sed -i "s/#\sko_KR\.UTF-8/ko_KR\.UTF-8/g" /etc/locale.gen
-# 	locale-gen ko_KR.UTF-8
-# else
-# 	localedef -v -c -i ko_KR -f UTF-8 ko_KR.UTF-8    
-# fi
-
+if [[ ${PAAS_TA_FLAG} = "N" ]]; then
+	mkdir -p ${LENA_HOME}
+	echo "tar -xzf ${LENA_ROOT}/${INSTALL_FILE_NAME} -C ${LENA_HOME} --strip-components=1"
+	tar -xzf ${LENA_ROOT}/${INSTALL_FILE_NAME} -C ${LENA_HOME} --strip-components=1
+	
+	#Change root user enabled.
+	echo "Change ${LENA_HOME}/bin/install.sh to run as root user"
+	sed -i "s/-d64/-d64 -Droot_user.allowed=true/g" ${LENA_HOME}/bin/install.sh
+	cat ${LENA_HOME}/bin/install.sh | grep d64
+	
+	echo "SET LOCALE ko_KR.utf8"
+	if   [[ "${OS_FAMILY}" =~ "ubuntu" ]]; then
+	    locale-gen ko_KR.UTF-8
+	elif [[ "${OS_FAMILY}" =~ "debian" ]]; then
+		sed -i "s/#\sko_KR\.UTF-8/ko_KR\.UTF-8/g" /etc/locale.gen
+		locale-gen ko_KR.UTF-8
+	else
+		localedef -v -c -i ko_KR -f UTF-8 ko_KR.UTF-8    
+	fi
+fi
 
 case ${LENA_SERVER_TYPE} in
     web)
@@ -56,15 +61,20 @@ case ${LENA_SERVER_TYPE} in
 	            	echo "curl -o ${LENA_HOME}/modules/lena-web-pe/lib/${ubuntu_lib} ${LIB_DOWNLOAD_URL}/web/ubuntu/${ubuntu_lib}"
 	            	curl -o ${LENA_HOME}/modules/lena-web-pe/lib/${ubuntu_lib} ${LIB_DOWNLOAD_URL}/web/ubuntu/${ubuntu_lib}
 	            done;
+	           
+	            # add user group
+		        echo "add User Group nobody"
+		        groupadd nobody
             else
                 # ##### PAAS-TA ##### 
                 echo "${LENA_HOME}/depot/lena-web-lib/ubuntu/* ${LENA_HOME}/modules/lena-web-pe/lib"
                 cp -f ${LENA_HOME}/depot/lena-web-lib/ubuntu/* ${LENA_HOME}/modules/lena-web-pe/lib
+                
+                # Set Group from nobody to nogroup for ubuntu   
+		        echo "Set Group of httpd to 'nogroup'"
+		        echo "sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf"
+		        sed -i "s/Group\snobody/Group nogroup/g" ${LENA_SERVER_HOME}/conf/httpd.conf
             fi
-            
-            # add user group
-	        echo "add User Group nobody"
-	        groupadd nobody
         fi
        
        
@@ -92,24 +102,21 @@ case ${LENA_SERVER_TYPE} in
             # ##### PAAS-TA ##### 
             cp -f ${LENA_HOME}/depot/lena-web-lib/start.sh_stdout ${LENA_SERVER_HOME}/start.sh
         fi        
-        
-        #LOG ROTATE setup
-        echo "Create LENA logrotate configure path = /etc/logrotate.d/lena"
-        sudo touch /etc/logrotate.d/lena
+                
         if [[ ${PAAS_TA_FLAG} = "N" ]]; then
         	# ##### DOCKER #####
+        	#LOG ROTATE setup
+	        echo "Create LENA logrotate configure path = /etc/logrotate.d/lena"
+	        touch /etc/logrotate.d/lena
         	echo "/usr/local/lenaw/servers/webServer/logs/*log {" >> /etc/logrotate.d/lena
-        else
-        	# ##### PAAS-TA #####
-        	sudo echo "/home/vcap/app/.java-buildpack/lenaw/servers/webServer/logs/*log {" >> /etc/logrotate.d/lena
-        fi
-        sudo echo "    copytruncate"                               >> /etc/logrotate.d/lena
-        sudo echo "    daily"                                      >> /etc/logrotate.d/lena
-        sudo echo "    rotate 30"                                  >> /etc/logrotate.d/lena
-        sudo echo "    missingok"                                  >> /etc/logrotate.d/lena
-       sudo  echo "    dateext"                                    >> /etc/logrotate.d/lena
-        sudo echo "    notifempty"                                 >> /etc/logrotate.d/lena
-        sudo echo "}"                                              >> /etc/logrotate.d/lena
+        	echo "    copytruncate"                               >> /etc/logrotate.d/lena
+	        echo "    daily"                                      >> /etc/logrotate.d/lena
+	        echo "    rotate 30"                                  >> /etc/logrotate.d/lena
+	        echo "    missingok"                                  >> /etc/logrotate.d/lena
+	        echo "    dateext"                                    >> /etc/logrotate.d/lena
+	        echo "    notifempty"                                 >> /etc/logrotate.d/lena
+	        echo "}"                                              >> /etc/logrotate.d/lena      
+        fi                              
         
         if [[ ${PAAS_TA_FLAG} = "Y" ]]; then 
         	# ##### PAAS-TA #####
@@ -254,9 +261,9 @@ case ${LENA_SERVER_TYPE} in
 		else
 			# ##### PAAS-TA #####
 	    	echo "==== Set root path ==="
-		        sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_SERVER_HOME}/env.sh
-		        sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_HOME}/etc/info/java-home.info       
-		        sed -i "s/tmp\/app\/\.java\-buildpack\/lena\/depot\/lena-application\/ROOT/home\/vcap\/app/g" ${LENA_SERVER_HOME}/conf/Catalina/localhost/ROOT.xml          
+		    sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_SERVER_HOME}/env.sh
+		    sed -i "s/tmp\/app/home\/vcap\/app/g" ${LENA_HOME}/etc/info/java-home.info       
+		    sed -i "s/tmp\/app\/\.java\-buildpack\/lena\/depot\/lena-application\/ROOT/home\/vcap\/app/g" ${LENA_SERVER_HOME}/conf/Catalina/localhost/ROOT.xml          
 	    fi
 	
         echo "Change LOG_OUTPUT to console"
