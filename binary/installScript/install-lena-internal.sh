@@ -16,11 +16,11 @@ LENA_SERVER_NAME=webServer
 LENA_SERVER_HOME=/tmp/app/.java-buildpack/lenaw/servers/webServer
 LENA_USER=vcap
 
-# echo "========= install utils start ============"
-# sudo apt-get update
-# sudo apt-get install -y locales logrotate
-# sudo apt-get -y autoclean && apt-get -y clean 
-# echo "========= install utils done ============"
+echo "========= install utils start ============"
+sudo apt-get update
+sudo apt-get install -y locales logrotate
+sudo apt-get -y autoclean && apt-get -y clean 
+echo "========= install utils done ============"
 
 
 # echo "SET LOCALE ko_KR.utf8"
@@ -95,21 +95,21 @@ case ${LENA_SERVER_TYPE} in
         
         #LOG ROTATE setup
         echo "Create LENA logrotate configure path = /etc/logrotate.d/lena"
-        touch /etc/logrotate.d/lena
+        sudo touch /etc/logrotate.d/lena
         if [[ ${PAAS_TA_FLAG} = "N" ]]; then
         	# ##### DOCKER #####
         	echo "/usr/local/lenaw/servers/webServer/logs/*log {" >> /etc/logrotate.d/lena
         else
         	# ##### PAAS-TA #####
-        	echo "/home/vcap/app/.java-buildpack/lenaw/servers/webServer/logs/*log {" >> /etc/logrotate.d/lena
+        	sudo echo "/home/vcap/app/.java-buildpack/lenaw/servers/webServer/logs/*log {" >> /etc/logrotate.d/lena
         fi
-        echo "    copytruncate"                               >> /etc/logrotate.d/lena
-        echo "    daily"                                      >> /etc/logrotate.d/lena
-        echo "    rotate 30"                                  >> /etc/logrotate.d/lena
-        echo "    missingok"                                  >> /etc/logrotate.d/lena
-        echo "    dateext"                                    >> /etc/logrotate.d/lena
-        echo "    notifempty"                                 >> /etc/logrotate.d/lena
-        echo "}"                                              >> /etc/logrotate.d/lena
+        sudo echo "    copytruncate"                               >> /etc/logrotate.d/lena
+        sudo echo "    daily"                                      >> /etc/logrotate.d/lena
+        sudo echo "    rotate 30"                                  >> /etc/logrotate.d/lena
+        sudo echo "    missingok"                                  >> /etc/logrotate.d/lena
+       sudo  echo "    dateext"                                    >> /etc/logrotate.d/lena
+        sudo echo "    notifempty"                                 >> /etc/logrotate.d/lena
+        sudo echo "}"                                              >> /etc/logrotate.d/lena
         
         if [[ ${PAAS_TA_FLAG} = "Y" ]]; then 
         	# ##### PAAS-TA #####
